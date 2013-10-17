@@ -1,9 +1,9 @@
 package com.slauson.tactics.view;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.slauson.tactics.model.Overworld;
 
 /**
  * Renders the overworld.
@@ -11,13 +11,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
  *
  */
 public class OverworldRenderer {
-	private static final int GRID_SIZE = 10;
 	
 	private ShapeRenderer renderer;
 	
+	private Overworld overworld;
+	
 	private int width, height;
 	
-	public OverworldRenderer() {
+	public OverworldRenderer(Overworld overworld) {
+		this.overworld = overworld;
+		
 		renderer = new ShapeRenderer();
 	}
 	
@@ -36,11 +39,12 @@ public class OverworldRenderer {
 	 */
 	public void render(OrthographicCamera camera) {
 		renderer.setProjectionMatrix(camera.combined);
-		renderer.begin(ShapeType.Rectangle);
-		for (int i = 0; i < GRID_SIZE; i++) {
-			for (int j = 0; j < GRID_SIZE; j++) {
-				renderer.setColor(new Color((i*1.0f/GRID_SIZE), 0, (GRID_SIZE-i*1.0f)/GRID_SIZE, 1));
-				renderer.rect(i, j, 1, 1);
+		renderer.begin(ShapeType.FilledRectangle);
+		
+		for (int i = 0; i < overworld.regions.length; i++) {
+			for (int j = 0; j < overworld.regions[i].length; j++) {
+				renderer.setColor(overworld.regions[i][j].color);
+				renderer.filledRect(overworld.regions[i][j].position.x, overworld.regions[i][j].position.y, overworld.regions[i][j].bounds.width, overworld.regions[i][j].bounds.height);
 			}
 		}
 		renderer.end();

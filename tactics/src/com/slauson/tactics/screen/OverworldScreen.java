@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Vector3;
 import com.slauson.tactics.controller.OverworldController;
+import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.view.OverworldRenderer;
 
 /**
@@ -21,6 +22,7 @@ public class OverworldScreen implements Screen, InputProcessor {
 	
 	private static final float ZOOM_INCREMENT = 0.02f;
 
+	private Overworld overworld;
 	private OverworldRenderer renderer;
 	private OverworldController controller;
 	
@@ -35,10 +37,13 @@ public class OverworldScreen implements Screen, InputProcessor {
 	
 	public OverworldScreen() {
 		camera = new OrthographicCamera();
+		
 		lastMousePressWorldPosition = new Vector3();
 		lastMouseScreenPosition = new Vector3();
 		
 		zoomAmount = 1f;
+		
+		overworld = new Overworld();
 	}
 	
 	@Override
@@ -70,8 +75,8 @@ public class OverworldScreen implements Screen, InputProcessor {
 
 	@Override
 	public void show() {
-		renderer = new OverworldRenderer();
-		controller = new OverworldController();
+		renderer = new OverworldRenderer(overworld);
+		controller = new OverworldController(overworld);
 		Gdx.input.setInputProcessor(this);
 	}
 
@@ -134,6 +139,9 @@ public class OverworldScreen implements Screen, InputProcessor {
 		
 		// set this here so we use the updated position in touchDragged
 		lastMouseScreenPosition.set(screenX, screenY, 0);
+		
+		controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y);
+		
 		return true;
 	}
 
