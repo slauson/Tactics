@@ -1,6 +1,5 @@
 package com.slauson.tactics.controller;
 
-import com.badlogic.gdx.graphics.Color;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Region;
 
@@ -9,9 +8,9 @@ import com.slauson.tactics.model.Region;
  * @author josh
  *
  */
-public class OverworldController {
+public class OverworldController extends Controller {
 
-	private static final float MAX_DELTA = 0.1f;
+	public Region attackingRegion, defendingRegion;
 	
 	private Overworld overworld;
 	private Region selectedRegion;
@@ -20,29 +19,65 @@ public class OverworldController {
 		this.overworld = overworld;
 		
 		selectedRegion = null;
+		attackingRegion = null;
+		defendingRegion = null;
 	}
 	
+	@Override
 	public void update(float delta) {
 		if (delta > MAX_DELTA) {
 			delta = MAX_DELTA;
 		}
-		
 	}
 	
-	public void touchDown(float worldX, float worldY) {
+	@Override
+	public Event touchDown(float worldX, float worldY) {
 		// check if region is selected
 		for (int i = 0; i < overworld.regions.length; i++) {
 			for (int j = 0; j < overworld.regions[i].length; j++) {
-				if (overworld.regions[i][j].bounds.contains(worldX, worldY)) {
+				if (overworld.regions[i][j] != null && overworld.regions[i][j].bounds.contains(worldX, worldY)) {
 					
+					// unselect previously selected region
 					if (selectedRegion != null) {
-						selectedRegion.resetColor();
+						
+						selectedRegion.selected = false;
+						
+						// unmark previously selected region neighbors
+						for (Region neighbor : selectedRegion.neighbors) {
+							neighbor.marked = false;
+						}
+						
+						// if selected again, just unselect
+						if (selectedRegion == overworld.regions[i][j]) {
+							selectedRegion = null;
+							return Event.NONE;
+						}
+						
+						// region is in selected region's neighbors
+						if (selectedRegion.neighbors.contains(overworld.regions[i][j])) {
+							// change color of new region
+							overworld.regions[i][j].color = selectedRegion.color;
+							attackingRegion = selectedRegion;
+							defendingRegion = overworld.regions[i][j];
+							selectedRegion = null;
+							return Event.BATTLE;
+						}
 					}
 					
+					// select new selected region
 					selectedRegion = overworld.regions[i][j];
-					selectedRegion.color = Color.BLUE;
+					selectedRegion.selected = true;
+					
+					// mark selected region neighbors
+					for (Region neighbor : selectedRegion.neighbors) {
+						neighbor.marked = true;
+					}
+					
+					return Event.NONE;
 				}
 			}
 		}
+		
+		return Event.NONE;
 	}
 }
