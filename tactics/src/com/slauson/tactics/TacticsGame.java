@@ -6,6 +6,7 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.screen.BattleScreen;
 import com.slauson.tactics.screen.OverworldScreen;
+import com.slauson.tactics.view.TransitionScreen;
 
 /**
  * Main class for the game.
@@ -31,10 +32,11 @@ public class TacticsGame extends Game {
 	
 	/**
 	 * Displays the battle screen.
-	 * @param attacker attacking region
-	 * @param defender defending region
+	 * @param attackingRegion attacking region
+	 * @param defendingRegion defending region
 	 */
-	public void showBattle(Region attacker, Region defender, TextureRegion texture) {
-		setScreen(new BattleScreen(attacker, defender, texture, this));
+	public void showBattle(Region attackingRegion, Region defendingRegion) {
+		BattleScreen battleScreen = new BattleScreen(this, attackingRegion, defendingRegion);
+		setScreen(new TransitionScreen(this, battleScreen));
 	}
 }

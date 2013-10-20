@@ -48,7 +48,7 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 	
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+		Gdx.gl.glClearColor(0f, 0f, 0f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		
 		controller.update(delta);

@@ -12,15 +12,12 @@ public class Region {
 	private static final float SIZE = 1f;
 	private static final Color DEFAULT_COLOR = Color.WHITE;
 	
-	private static final int NUM_UNITS_PER_REGION = 1;
-	
-	public Unit[] units;
 	public List<Region> neighbors;
+	
+	public Player player;
 	
 	public Vector2 position;
 	public Rectangle bounds;
-	
-	public Color color;
 	
 	public boolean selected;
 	public boolean marked;
@@ -34,12 +31,9 @@ public class Region {
 		bounds.width = SIZE;
 		bounds.height = SIZE;
 		
-		color = DEFAULT_COLOR;
-		
 		selected = false;
 		marked = false;
 		
-		units = new Unit[NUM_UNITS_PER_REGION];
 		neighbors = new ArrayList<Region>();
 	}
 }

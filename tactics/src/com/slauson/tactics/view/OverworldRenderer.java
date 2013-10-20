@@ -25,23 +25,11 @@ public class OverworldRenderer extends Renderer {
 	
 	private Overworld overworld;
 	
-	private List<Region> regions;
-	
 	public OverworldRenderer(Overworld overworld) {
 		super();
 		this.overworld = overworld;
 		
 		renderer = new ShapeRenderer();
-
-		// populate list of actual regions
-		regions = new ArrayList<Region>();
-		for (int i = 0; i < overworld.regions.length; i++) {
-			for (int j = 0; j < overworld.regions[i].length; j++) {
-				if (overworld.regions[i][j] != null) {
-					regions.add(overworld.regions[i][j]);
-				}
-			}
-		}
 	}
 	
 	/**
@@ -53,18 +41,18 @@ public class OverworldRenderer extends Renderer {
 		
 		// draw colors
 		renderer.begin(ShapeType.FilledRectangle);
-		for (Region region : regions) {
+		for (Region region : overworld.regionList) {
 			// selected region
 			if (region.selected) {
 				renderer.setColor(SELECTED_REGION_COLOR);
 			}
 			// marked region
 			else if (region.marked) {
-				renderer.setColor(region.color.r*MARKED_REGION_COLOR_FACTOR, region.color.g*MARKED_REGION_COLOR_FACTOR, region.color.b*MARKED_REGION_COLOR_FACTOR, 0);
+				renderer.setColor(region.player.color.r*MARKED_REGION_COLOR_FACTOR, region.player.color.g*MARKED_REGION_COLOR_FACTOR, region.player.color.b*MARKED_REGION_COLOR_FACTOR, 0);
 			}
 			// normal region
 			else {
-				renderer.setColor(region.color);
+				renderer.setColor(region.player.color);
 			}
 			
 			renderer.filledRect(region.position.x, region.position.y, region.bounds.width, region.bounds.height);
@@ -74,7 +62,7 @@ public class OverworldRenderer extends Renderer {
 		// draw outline
 		renderer.begin(ShapeType.Rectangle);
 		renderer.setColor(Color.BLACK);
-		for (Region region : regions) {
+		for (Region region : overworld.regionList) {
 			renderer.rect(region.position.x, region.position.y, region.bounds.width, region.bounds.height);
 		}
 		renderer.end();

@@ -1,7 +1,11 @@
 package com.slauson.tactics.model;
 
-import com.badlogic.gdx.graphics.Color;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import com.badlogic.gdx.math.Vector2;
+import com.slauson.tactics.model.Player.Type;
 
 /**
  * Overworld of islands/regions.
@@ -14,12 +18,25 @@ public class Overworld {
 	public Region[][] regions;
 	public Island[] islands;
 	
-	public Overworld() {
+	public Player[] players;
+	
+	public List<Region> regionList;
+	
+	public Overworld(int numPlayers) {
 		width = 8;
 		height = 6;
 		
+		players = new Player[numPlayers];
+		
+		// player always controls first player
+		players[0] = new Player(Type.PLAYER);
+		for (int i = 1; i < players.length; i++) {
+			players[i] = new Player(Type.AI);
+		}
+		
 		testOverworld();
 		computeRegionNeighbors();
+		assignRegionPlayers();
 	}
 	
 	private void testOverworld() {
@@ -28,6 +45,7 @@ public class Overworld {
 			islands[i] = new Island();
 		}
 		
+		regionList = new ArrayList<Region>();
 		regions = new Region[width][height];
 		
 		// null fill
@@ -39,65 +57,66 @@ public class Overworld {
 		
 		// top left
 		regions[1][3] = new Region(new Vector2(-3, 0));
-		regions[1][3].color = Color.RED;
 		islands[0].regions.add(regions[1][3]);
+		regionList.add(regions[1][3]);
 		regions[1][4] = new Region(new Vector2(-3, 1));
-		regions[1][4].color = Color.RED;
 		islands[0].regions.add(regions[1][4]);
+		regionList.add(regions[1][4]);
 		regions[2][3] = new Region(new Vector2(-2, 0));
-		regions[2][3].color = Color.RED;
 		islands[0].regions.add(regions[2][3]);
+		regionList.add(regions[2][3]);
 		regions[2][4] = new Region(new Vector2(-2, 1));
-		regions[2][4].color = Color.RED;
 		islands[0].regions.add(regions[2][4]);
+		regionList.add(regions[2][4]);
 		
 		// bottom left
 		regions[2][0] = new Region(new Vector2(-2, -3));
-		regions[2][0].color = Color.GREEN;
 		islands[1].regions.add(regions[2][0]);
+		regionList.add(regions[2][0]);
 		regions[2][1] = new Region(new Vector2(-2, -2));
-		regions[2][1].color = Color.GREEN;
 		islands[1].regions.add(regions[2][1]);
+		regionList.add(regions[2][1]);
 		regions[3][0] = new Region(new Vector2(-1, -3));
-		regions[3][0].color = Color.GREEN;
 		islands[1].regions.add(regions[3][0]);
+		regionList.add(regions[3][0]);
 		regions[3][1] = new Region(new Vector2(-1, -2));
-		regions[3][1].color = Color.GREEN;
 		islands[1].regions.add(regions[3][1]);
+		regionList.add(regions[3][1]);
 		
 		// top right
 		regions[4][4] = new Region(new Vector2(0, 1));
-		regions[4][4].color = Color.BLUE;
 		islands[2].regions.add(regions[0][1]);
+		regionList.add(regions[4][4]);
 		regions[4][5] = new Region(new Vector2(0, 2));
-		regions[4][5].color = Color.BLUE;
 		islands[2].regions.add(regions[4][5]);
+		regionList.add(regions[4][5]);
 		regions[5][4] = new Region(new Vector2(1, 1));
-		regions[5][4].color = Color.BLUE;
 		islands[2].regions.add(regions[5][4]);
+		regionList.add(regions[5][4]);
 		regions[5][5] = new Region(new Vector2(1, 2));
-		regions[5][5].color = Color.BLUE;
 		islands[2].regions.add(regions[5][5]);
+		regionList.add(regions[5][5]);
 		
 		// bottom right
 		regions[5][1] = new Region(new Vector2(1, -2));
-		regions[5][1].color = Color.ORANGE;
 		islands[3].regions.add(regions[5][1]);
+		regionList.add(regions[5][1]);
 		regions[5][2] = new Region(new Vector2(1, -1));
-		regions[5][2].color = Color.ORANGE;
 		islands[3].regions.add(regions[5][2]);
+		regionList.add(regions[5][2]);
 		regions[6][1] = new Region(new Vector2(2, -2));
-		regions[6][1].color = Color.ORANGE;
 		islands[3].regions.add(regions[6][1]);
+		regionList.add(regions[6][1]);
 		regions[6][2] = new Region(new Vector2(2, -1));
-		regions[6][2].color = Color.ORANGE;
 		islands[3].regions.add(regions[6][2]);
+		regionList.add(regions[6][2]);
 		regions[7][1] = new Region(new Vector2(3, -2));
-		regions[7][1].color = Color.ORANGE;
 		islands[3].regions.add(regions[7][1]);
+		regionList.add(regions[7][1]);
 		regions[7][2] = new Region(new Vector2(3, -1));
-		regions[7][2].color = Color.ORANGE;
 		islands[3].regions.add(regions[7][2]);
+		regionList.add(regions[7][2]);
+		
 	}
 	
 	/**
@@ -152,6 +171,28 @@ public class Overworld {
 					}
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Randomly assigns regions to players.
+	 */
+	private void assignRegionPlayers() {
+		
+		Random random = new Random();
+		
+		// random player index
+		int playerIndex = random.nextInt(players.length);
+		
+		// random region indices
+		List<Integer> regionIndices = new ArrayList<Integer>(regionList.size());		
+		for (int i = 0; i < regionList.size(); i++) {
+			regionIndices.add(random.nextInt(regionIndices.size() + 1), i);
+		}
+		
+		for (int i = 0; i < regionIndices.size(); i++) {
+			regionList.get(regionIndices.get(i)).player = players[playerIndex % players.length];
+			playerIndex++;
 		}
 	}
 }

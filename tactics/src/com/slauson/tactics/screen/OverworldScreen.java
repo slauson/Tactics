@@ -1,6 +1,5 @@
 package com.slauson.tactics.screen;
 
-import com.badlogic.gdx.utils.ScreenUtils;
 import com.slauson.tactics.TacticsGame;
 import com.slauson.tactics.controller.OverworldController;
 import com.slauson.tactics.model.Overworld;
@@ -13,12 +12,14 @@ import com.slauson.tactics.view.OverworldRenderer;
  */
 public class OverworldScreen extends Screen {
 
+	private static final int NUM_PLAYERS = 4;
+	
 	private Overworld overworld;
 	
 	public OverworldScreen(TacticsGame game) {
 		super(game);
 		
-		overworld = new Overworld();
+		overworld = new Overworld(NUM_PLAYERS);
 	}
 	
 	@Override
@@ -35,7 +36,7 @@ public class OverworldScreen extends Screen {
 		switch(controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y)) {
 		case BATTLE:
 			// go to battle screen
-			game.showBattle(((OverworldController)controller).attackingRegion, ((OverworldController)controller).defendingRegion, ScreenUtils.getFrameBufferTexture());
+			game.showBattle(((OverworldController)controller).attackingRegion, ((OverworldController)controller).defendingRegion);
 			break;
 		case NONE:
 			// do nothing

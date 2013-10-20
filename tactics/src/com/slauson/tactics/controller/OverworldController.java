@@ -53,10 +53,10 @@ public class OverworldController extends Controller {
 							return Event.NONE;
 						}
 						
-						// region is in selected region's neighbors
-						if (selectedRegion.neighbors.contains(overworld.regions[i][j])) {
+						// region is in selected region's neighbors and owned by other player
+						if (selectedRegion.player != overworld.regions[i][j].player && selectedRegion.neighbors.contains(overworld.regions[i][j])) {
 							// change color of new region
-							overworld.regions[i][j].color = selectedRegion.color;
+							overworld.regions[i][j].player = selectedRegion.player;
 							attackingRegion = selectedRegion;
 							defendingRegion = overworld.regions[i][j];
 							selectedRegion = null;
@@ -70,7 +70,10 @@ public class OverworldController extends Controller {
 					
 					// mark selected region neighbors
 					for (Region neighbor : selectedRegion.neighbors) {
-						neighbor.marked = true;
+						// only mark regions owned by other players
+						if (selectedRegion.player != neighbor.player) {
+							neighbor.marked = true;
+						}
 					}
 					
 					return Event.NONE;
