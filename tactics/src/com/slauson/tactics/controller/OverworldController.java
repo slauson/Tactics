@@ -60,7 +60,7 @@ public class OverworldController extends Controller {
 							attackingRegion = selectedRegion;
 							defendingRegion = overworld.regions[i][j];
 							selectedRegion = null;
-							return Event.BATTLE;
+							return Event.BATTLE_START;
 						}
 					}
 					

@@ -10,7 +10,7 @@ public abstract class Controller {
 	protected static final float MAX_DELTA = 0.1f;
 	
 	public enum Event {
-		NONE, BATTLE
+		NONE, BATTLE_START, BATTLE_END
 	};
 	
 	/**

@@ -17,6 +17,6 @@ public class BattleController extends Controller {
 
 	@Override
 	public Event touchDown(float worldX, float worldY) {
-		return Event.NONE;
+		return Event.BATTLE_END;
 	}
 }

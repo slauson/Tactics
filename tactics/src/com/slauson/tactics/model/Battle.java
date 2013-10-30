@@ -1,16 +1,34 @@
 package com.slauson.tactics.model;
 
-public class Battle {
+import com.slauson.tactics.model.Unit.Type;
 
-	private Region attackingRegion, defendingRegion;
+public class Battle {
 	
-	private Unit[] attackingUnits, defendingUnits;
+	private static final int NUM_UNITS = 3;
+
+	public Region attackingRegion, defendingRegion;
+	
+	public Unit[] attackingUnits, defendingUnits;
 	
 	public Battle(Region attackingRegion, Region defendingRegion) {
 		this.attackingRegion = attackingRegion;
 		this.defendingRegion = defendingRegion;
 		
-		attackingUnits = new Unit[3];
-		defendingUnits = new Unit[3];
+		attackingUnits = new Unit[NUM_UNITS];
+		defendingUnits = new Unit[NUM_UNITS];
+		
+		testUnits();
+	}
+	
+	private void testUnits() {
+		
+		// random units
+		attackingUnits[0] = new Unit(Type.CIRCLE, 100);
+		attackingUnits[1] = new Unit(Type.SQUARE, 100);
+		attackingUnits[2] = new Unit(Type.TRIANGLE, 100);
+		
+		defendingUnits[0] = new Unit(Type.TRIANGLE, 100);
+		defendingUnits[1] = new Unit(Type.SQUARE, 100);
+		defendingUnits[2] = new Unit(Type.CIRCLE, 100);
 	}
 }

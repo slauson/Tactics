@@ -36,7 +36,6 @@ public class TacticsGame extends Game {
 	 * @param defendingRegion defending region
 	 */
 	public void showBattle(Region attackingRegion, Region defendingRegion) {
-		BattleScreen battleScreen = new BattleScreen(this, attackingRegion, defendingRegion);
-		setScreen(new TransitionScreen(this, battleScreen));
+		setScreen(new BattleScreen(this, attackingRegion, defendingRegion));
 	}
 }

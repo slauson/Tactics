@@ -24,4 +24,21 @@ public class BattleScreen extends Screen {
 		renderer = new BattleRenderer(battle);
 		controller = new BattleController(battle);
 	}
+	
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		super.touchDown(screenX, screenY, pointer, button);
+		
+		switch(controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y)) {
+		case BATTLE_END:
+			// go to battle screen
+			game.showOverworld();
+			break;
+		default:
+			// do nothing
+			break;
+		}
+		
+		return true;
+	}
 }
