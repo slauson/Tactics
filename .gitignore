@@ -23,3 +23,4 @@ tactics/libs/
 tactics-android/AndroidManifest.xml
 tactics-android/proguard.cfg
 tactics-android/project.properties
+resources/
