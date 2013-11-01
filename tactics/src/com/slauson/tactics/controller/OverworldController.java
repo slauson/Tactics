@@ -55,8 +55,6 @@ public class OverworldController extends Controller {
 						
 						// region is in selected region's neighbors and owned by other player
 						if (selectedRegion.player != overworld.regions[i][j].player && selectedRegion.neighbors.contains(overworld.regions[i][j])) {
-							// change color of new region
-							overworld.regions[i][j].player = selectedRegion.player;
 							attackingRegion = selectedRegion;
 							defendingRegion = overworld.regions[i][j];
 							selectedRegion = null;
@@ -82,5 +80,10 @@ public class OverworldController extends Controller {
 		}
 		
 		return Event.NONE;
+	}
+
+	public void battleResult(Region victorRegion, Region defeatedRegion) {
+		// change color of defeated region
+		defeatedRegion.player = victorRegion.player;
 	}
 }

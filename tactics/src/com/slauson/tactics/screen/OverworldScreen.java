@@ -3,6 +3,7 @@ package com.slauson.tactics.screen;
 import com.slauson.tactics.TacticsGame;
 import com.slauson.tactics.controller.OverworldController;
 import com.slauson.tactics.model.Overworld;
+import com.slauson.tactics.model.Region;
 import com.slauson.tactics.view.OverworldRenderer;
 
 /**
@@ -44,5 +45,9 @@ public class OverworldScreen extends Screen {
 		}
 		
 		return true;
+	}
+
+	public void battleResult(Region victorRegion, Region defeatedRegion) {
+		((OverworldController)controller).battleResult(victorRegion, defeatedRegion);
 	}
 }

@@ -31,6 +31,14 @@ public class TacticsGame extends Game {
 	}
 	
 	/**
+	 * Displays the overworld screen.
+	 */
+	public void showOverworld(Region victorRegion, Region defeatedRegion) {
+		setScreen(overworldScreen);
+		overworldScreen.battleResult(victorRegion, defeatedRegion);
+	}
+	
+	/**
 	 * Displays the battle screen.
 	 * @param attackingRegion attacking region
 	 * @param defendingRegion defending region

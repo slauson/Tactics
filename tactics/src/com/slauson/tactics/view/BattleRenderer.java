@@ -30,6 +30,7 @@ public class BattleRenderer extends Renderer {
 		float x, y;
 		float yIncrement = -3;
 		float size = 1;
+		int numSegments = 20;
 		
 		y = -yIncrement - size/2;
 		x = -3;
@@ -40,7 +41,7 @@ public class BattleRenderer extends Renderer {
 			switch (unit.type) {
 			case CIRCLE:
 				renderer.begin(ShapeType.FilledCircle);
-				renderer.filledCircle(x, y, size);
+				renderer.filledCircle(x, y, size/2, numSegments);
 				renderer.end();
 				break;
 			case SQUARE:
@@ -67,7 +68,7 @@ public class BattleRenderer extends Renderer {
 			switch (unit.type) {
 			case CIRCLE:
 				renderer.begin(ShapeType.FilledCircle);
-				renderer.filledCircle(x, y, size);
+				renderer.filledCircle(x, y, size/2, numSegments);
 				renderer.end();
 				break;
 			case SQUARE:
