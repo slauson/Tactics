@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.slauson.tactics.utils.Util;
 
 public class Region {
 
@@ -15,6 +16,8 @@ public class Region {
 	public List<Region> neighbors;
 	
 	public Player player;
+	
+	public Unit unit;
 	
 	public Vector2 position;
 	public Rectangle bounds;
@@ -35,5 +38,12 @@ public class Region {
 		marked = false;
 		
 		neighbors = new ArrayList<Region>();
+		
+		testRegion();
+	}
+	
+	private void testRegion() {
+		int typeIndex = Util.random().nextInt(Unit.Type.values().length);
+		unit = new Unit(Unit.Type.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
 	}
 }

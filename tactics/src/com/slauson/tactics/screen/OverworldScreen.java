@@ -37,7 +37,7 @@ public class OverworldScreen extends Screen {
 		switch(controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y)) {
 		case BATTLE_START:
 			// go to battle screen
-			game.showBattle(((OverworldController)controller).attackingRegion, ((OverworldController)controller).defendingRegion);
+			//game.showBattle(((OverworldController)controller).attackingRegion, ((OverworldController)controller).defendingRegion);
 			break;
 		default:
 			// do nothing

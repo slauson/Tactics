@@ -1,0 +1,11 @@
+Battles
+	simple animation
+		shapes hitting each other, slowly losing health?
+	victor takes over defeated region, leaving previously held region empty
+	ranged units?
+
+Turns
+	earn units for holding islands
+	units used to heal/add new units
+
+Event system for passing data between screens

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Region;
+import com.slauson.tactics.model.Unit;
 
 /**
  * Renders the overworld.
@@ -55,6 +56,39 @@ public class OverworldRenderer extends Renderer {
 			renderer.filledRect(region.position.x, region.position.y, region.bounds.width, region.bounds.height);
 		}
 		renderer.end();
+		
+		// draw units
+		for (Region region : overworld.regionList) {
+			
+			if (region.unit != null) {
+			
+				// set color based on health and player color
+				renderer.setColor(region.player.color.r*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+						region.player.color.g*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+						region.player.color.b*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+						1);
+				
+				switch(region.unit.type) {
+				case CIRCLE:
+					renderer.begin(ShapeType.FilledCircle);
+					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8, 20);
+					renderer.end();
+					break;
+				case SQUARE:
+					renderer.begin(ShapeType.FilledRectangle);
+					renderer.filledRect(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8, 3*region.bounds.width/4, 3*region.bounds.height/4);
+					renderer.end();
+					break;
+				case TRIANGLE:
+					renderer.begin(ShapeType.FilledTriangle);
+					renderer.filledTriangle(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8,
+							region.position.x + region.bounds.width/2, region.position.y + 7*region.bounds.height/8,
+							region.position.x + 7*region.bounds.width/8, region.position.y + region.bounds.height/8);
+					renderer.end();
+					break;
+				}
+			}
+		}
 
 		// draw outline
 		renderer.begin(ShapeType.Rectangle);
