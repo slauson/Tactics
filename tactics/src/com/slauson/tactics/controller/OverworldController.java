@@ -37,6 +37,7 @@ public class OverworldController extends Controller {
 		// check if region is selected
 		for (int i = 0; i < overworld.regions.length; i++) {
 			for (int j = 0; j < overworld.regions[i].length; j++) {
+				// only check non null regions owned by player who has current turn
 				if (overworld.regions[i][j] != null && overworld.regions[i][j].bounds.contains(worldX, worldY)) {
 					
 					// unselect previously selected region
@@ -76,8 +77,8 @@ public class OverworldController extends Controller {
 						}
 					}
 					
-					// only allow selecting regions with units
-					if (overworld.regions[i][j].unit != null) {
+					// only allow selecting regions with units for player who has current turn
+					if (overworld.regions[i][j].unit != null && overworld.regions[i][j].player == overworld.players[overworld.playerTurnIndex]) {
 					
 						// select new selected region
 						selectedRegion = overworld.regions[i][j];
@@ -99,6 +100,20 @@ public class OverworldController extends Controller {
 		}
 		
 		return Event.NONE;
+	}
+	
+
+	@Override
+	public void keyTyped(char character) {
+		switch (character) {
+		case ' ':
+			// move to next turn
+			overworld.playerTurnIndex++;
+			if (overworld.playerTurnIndex >= overworld.players.length) {
+				overworld.playerTurnIndex = 0;
+			}
+			break;
+		}
 	}
 
 	public void battleResult(Region victorRegion, Region defeatedRegion) {
@@ -187,4 +202,5 @@ public class OverworldController extends Controller {
 			attackingRegion.unit = null;
 		}
 	}
+
 }

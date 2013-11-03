@@ -13,6 +13,13 @@ import com.slauson.tactics.model.Player.Type;
  *
  */
 public class Overworld {
+	
+	/*
+	 * TODO
+	 * - customize size
+	 * - customize # islands
+	 * - customize # regions 
+	 */
 
 	public int width, height;
 	public Region[][] regions;
@@ -22,11 +29,16 @@ public class Overworld {
 	
 	public List<Region> regionList;
 	
+	public int playerTurnIndex;
+	
+	
 	public Overworld(int numPlayers) {
 		width = 8;
 		height = 6;
 		
 		players = new Player[numPlayers];
+		
+		playerTurnIndex = 0;
 		
 		// player always controls first player
 		players[0] = new Player(Type.PLAYER);

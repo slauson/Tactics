@@ -17,7 +17,8 @@ public class OverworldRenderer extends Renderer {
 	
 	private static final Color SELECTED_REGION_COLOR = Color.WHITE;
 	private static final Color SELECTED_REGION_OUTLINE_COLOR = Color.WHITE;
-	private static final float MARKED_REGION_COLOR_FACTOR = 0.5f;
+	private static final float MARKED_REGION_COLOR_FACTOR = 0.25f;
+	private static final float NON_TURN_COLOR_FACTOR = 0.5f;
 	
 	private ShapeRenderer renderer;
 	
@@ -62,28 +63,47 @@ public class OverworldRenderer extends Renderer {
 			
 			if (region.unit != null) {
 			
+				// player with current turn has black units
+				if (region.player == overworld.players[overworld.playerTurnIndex]) {
+					renderer.setColor(Color.BLACK);
+				}
+				// other players are lighter
+				else {
+					renderer.setColor(region.player.color.r*NON_TURN_COLOR_FACTOR,
+							region.player.color.g*NON_TURN_COLOR_FACTOR,
+							region.player.color.b*NON_TURN_COLOR_FACTOR,
+							1);
+				}
+				
 				// set color based on health and player color
-				renderer.setColor(region.player.color.r*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
-						region.player.color.g*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
-						region.player.color.b*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
-						1);
+//				renderer.setColor(region.player.color.r*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+//						region.player.color.g*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+//						region.player.color.b*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
+//						1);
+				
+				// size of unit is based on health
+				float sizeFactor = 0.5f + (region.unit.health / Unit.MAX_HEALTH / 2);
+				
 				
 				switch(region.unit.type) {
 				case CIRCLE:
 					renderer.begin(ShapeType.FilledCircle);
-					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8, 20);
+					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
 					renderer.end();
 					break;
 				case SQUARE:
 					renderer.begin(ShapeType.FilledRectangle);
-					renderer.filledRect(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8, 3*region.bounds.width/4, 3*region.bounds.height/4);
+					renderer.filledRect(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor, 3*region.bounds.width/4*sizeFactor, 3*region.bounds.height/4*sizeFactor);
 					renderer.end();
 					break;
 				case TRIANGLE:
 					renderer.begin(ShapeType.FilledTriangle);
-					renderer.filledTriangle(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8,
-							region.position.x + region.bounds.width/2, region.position.y + 7*region.bounds.height/8,
-							region.position.x + 7*region.bounds.width/8, region.position.y + region.bounds.height/8);
+					renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
+							region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
+							region.position.x + region.bounds.width/2 + 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
+//					renderer.filledTriangle(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8,
+//							region.position.x + region.bounds.width/2, region.position.y + 7*region.bounds.height/8,
+//							region.position.x + 7*region.bounds.width/8, region.position.y + region.bounds.height/8);
 					renderer.end();
 					break;
 				}

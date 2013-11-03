@@ -26,4 +26,10 @@ public abstract class Controller {
 	 * @return event type of event that needs to be handled.
 	 */
 	public abstract Event touchDown(float worldX, float worldY);
+
+	/**
+	 * Handles key events.
+	 * @param character
+	 */
+	public abstract void keyTyped(char character);
 }

@@ -46,6 +46,13 @@ public class OverworldScreen extends Screen {
 		
 		return true;
 	}
+	
+	@Override
+	public boolean keyTyped(char character) {
+		controller.keyTyped(character);
+		super.keyTyped(character);
+		return true;
+	}
 
 	public void battleResult(Region victorRegion, Region defeatedRegion) {
 		((OverworldController)controller).battleResult(victorRegion, defeatedRegion);

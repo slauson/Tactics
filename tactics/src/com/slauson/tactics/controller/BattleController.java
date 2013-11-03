@@ -19,4 +19,9 @@ public class BattleController extends Controller {
 	public Event touchDown(float worldX, float worldY) {
 		return Event.BATTLE_END;
 	}
+
+	@Override
+	public void keyTyped(char character) {
+		// TODO Auto-generated method stub
+	}
 }
