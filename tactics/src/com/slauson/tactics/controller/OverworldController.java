@@ -37,7 +37,7 @@ public class OverworldController extends Controller {
 		// check if region is selected
 		for (int i = 0; i < overworld.regions.length; i++) {
 			for (int j = 0; j < overworld.regions[i].length; j++) {
-				// only check non null regions owned by player who has current turn
+				// only check non null regions
 				if (overworld.regions[i][j] != null && overworld.regions[i][j].bounds.contains(worldX, worldY)) {
 					
 					// unselect previously selected region
@@ -63,15 +63,40 @@ public class OverworldController extends Controller {
 							if (selectedRegion.player != overworld.regions[i][j].player) {
 								//attackingRegion = selectedRegion;
 								//defendingRegion = overworld.regions[i][j];
-								handleBattle(selectedRegion, overworld.regions[i][j]);
-								selectedRegion = null;
+								Region updatedAttackingRegion = handleBattle(selectedRegion, overworld.regions[i][j]);
+								
+								// keep region selected if attacker won battle
+								if (updatedAttackingRegion != null) {
+									selectedRegion = updatedAttackingRegion;
+									selectedRegion.selected = true;
+									
+									// mark selected region neighbors
+									for (Region neighbor : selectedRegion.neighbors) {
+										// only mark regions owned by other players
+										// or unoccupied regions owned by same player
+										if (selectedRegion.player != neighbor.player || neighbor.unit == null) {
+											neighbor.marked = true;
+										}
+									}
+								}
 								return Event.BATTLE_START;
 							}
 							// unoccupied region owned by same player
 							else if (overworld.regions[i][j].unit == null) {
 								overworld.regions[i][j].unit = selectedRegion.unit;
 								selectedRegion.unit = null;
-								selectedRegion = null;
+								selectedRegion = overworld.regions[i][j];
+								selectedRegion.selected = true;
+								
+								// mark selected region neighbors
+								for (Region neighbor : selectedRegion.neighbors) {
+									// only mark regions owned by other players
+									// or unoccupied regions owned by same player
+									if (selectedRegion.player != neighbor.player || neighbor.unit == null) {
+										neighbor.marked = true;
+									}
+								}
+								
 								return Event.NONE;
 							}
 						}
@@ -125,8 +150,9 @@ public class OverworldController extends Controller {
 	 * Handles battle between two regions.
 	 * @param attackingRegion
 	 * @param defendingRegion
+	 * @return attacker's updated region
 	 */
-	private void handleBattle(Region attackingRegion, Region defendingRegion) {
+	private Region handleBattle(Region attackingRegion, Region defendingRegion) {
 		
 		// special case of no defending unit
 		if (defendingRegion.unit == null) {
@@ -134,7 +160,7 @@ public class OverworldController extends Controller {
 			defendingRegion.player = attackingRegion.player;
 			defendingRegion.unit = attackingRegion.unit;
 			attackingRegion.unit = null;
-			return;
+			return defendingRegion;
 		}
 		
 		// calculate attack factor for attacking region 
@@ -189,6 +215,8 @@ public class OverworldController extends Controller {
 
 			// remove unit from attacking region
 			attackingRegion.unit = null;
+			
+			return null;
 		}
 		// attacker victory
 		else {
@@ -200,6 +228,8 @@ public class OverworldController extends Controller {
 			defendingRegion.player = attackingRegion.player;
 			defendingRegion.unit = attackingRegion.unit;
 			attackingRegion.unit = null;
+			
+			return defendingRegion;
 		}
 	}
 
