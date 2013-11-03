@@ -138,6 +138,9 @@ public class Overworld {
 		for (int column = 0; column < regions.length; column++) {
 			for (int row = 0; row < regions[column].length; row++) {
 				if (regions[column][row] != null) {
+					
+					// directly neighbors
+					
 					// surrounding regions
 					// left
 					if (column - 1 >= 0 && regions[column-1][row] != null) {
@@ -157,29 +160,65 @@ public class Overworld {
 					}
 					
 					// across regions
+//					// left
+//					if (column - 1 >= 0 && regions[column-1][row] == null &&
+//							column - 2 >= 0 && regions[column-2][row] != null)
+//					{
+//						regions[column][row].neighbors.add(regions[column-2][row]);
+//					}
+//					// up
+//					if (row + 1 < regions[column].length && regions[column][row+1] == null &&
+//							row + 2 < regions[column].length && regions[column][row+2] != null)
+//					{
+//						regions[column][row].neighbors.add(regions[column][row+2]);
+//					}
+//					// right
+//					if (column + 1 < regions.length && regions[column+1][row] == null &&
+//							column + 2 < regions.length && regions[column+2][row] != null)
+//					{
+//						regions[column][row].neighbors.add(regions[column+2][row]);
+//					}
+//					// down
+//					if (row - 1 >= 0 && regions[column][row-1] == null &&
+//							row - 2 >= 0 && regions[column][row-2] != null)
+//					{
+//						regions[column][row].neighbors.add(regions[column][row-2]);
+//					}
+					
+					// ranged neighbors
+					
 					// left
-					if (column - 1 >= 0 && regions[column-1][row] == null &&
-							column - 2 >= 0 && regions[column-2][row] != null)
-					{
-						regions[column][row].neighbors.add(regions[column-2][row]);
+					if (column - 2 >= 0 && regions[column-2][row] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column-2][row]);
 					}
 					// up
-					if (row + 1 < regions[column].length && regions[column][row+1] == null &&
-							row + 2 < regions[column].length && regions[column][row+2] != null)
-					{
-						regions[column][row].neighbors.add(regions[column][row+2]);
+					if (row + 2 < regions[column].length && regions[column][row+2] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column][row+2]);
 					}
 					// right
-					if (column + 1 < regions.length && regions[column+1][row] == null &&
-							column + 2 < regions.length && regions[column+2][row] != null)
-					{
-						regions[column][row].neighbors.add(regions[column+2][row]);
+					if (column + 2 < regions.length && regions[column+2][row] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column+2][row]);
 					}
 					// down
-					if (row - 1 >= 0 && regions[column][row-1] == null &&
-							row - 2 >= 0 && regions[column][row-2] != null)
-					{
-						regions[column][row].neighbors.add(regions[column][row-2]);
+					if (row - 2 >= 0 && regions[column][row-2] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column][row-2]);
+					}
+					
+					// up left
+					if (column - 1 >= 0 && row + 1 < regions[column-1].length && regions[column-1][row+1] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column-1][row+1]);
+					}
+					// up right
+					if (column + 1 < regions.length && row + 1 < regions[column+1].length && regions[column+1][row+1] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column+1][row+1]);
+					}
+					// down left
+					if (column - 1 >= 0 && row - 1 >= 0 && regions[column-1][row-1] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column-1][row-1]);
+					}
+					// down right
+					if (column + 1 < regions.length && row - 1 >= 0 && regions[column+1][row-1] != null) {
+						regions[column][row].rangedNeighbors.add(regions[column+1][row-1]);
 					}
 				}
 			}

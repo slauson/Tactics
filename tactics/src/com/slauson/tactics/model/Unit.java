@@ -13,11 +13,15 @@ public class Unit {
 	 */
 	public enum Type {
 		/* Strong against square, weak against triangle */
-		CIRCLE,
+		CIRCLE, RANGED_CIRCLE,
 		/* Strong against triangle, weak against circle */
-		SQUARE,
+		SQUARE, RANGED_SQUARE,
 		/* Strong against circle, weak against square */
-		TRIANGLE
+		TRIANGLE, RANGED_TRIANGLE;
+		
+		public boolean isRanged() {
+			return this == Type.RANGED_CIRCLE || this == Type.RANGED_SQUARE || this == Type.RANGED_TRIANGLE;
+		}
 	}
 	
 	public enum State {

@@ -14,6 +14,7 @@ public class Region {
 	private static final Color DEFAULT_COLOR = Color.WHITE;
 	
 	public List<Region> neighbors;
+	public List<Region> rangedNeighbors;
 	
 	public Player player;
 	
@@ -38,6 +39,7 @@ public class Region {
 		marked = false;
 		
 		neighbors = new ArrayList<Region>();
+		rangedNeighbors = new ArrayList<Region>();
 		
 		testRegion();
 	}
