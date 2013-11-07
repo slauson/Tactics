@@ -39,4 +39,9 @@ public class Unit {
 		
 		state = State.ACTIVE;
 	}
+	
+	@Override
+	public String toString() {
+		return type.name() + "(" + state.name() + ", " + health + ")";
+	}
 }

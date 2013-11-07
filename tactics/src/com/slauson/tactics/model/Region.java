@@ -48,4 +48,9 @@ public class Region {
 		int typeIndex = Util.random().nextInt(Unit.Type.values().length);
 		unit = new Unit(Unit.Type.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
 	}
+	
+	@Override
+	public String toString() {
+		return position.x + ", " + position.y + ": " + player + " - " + unit;
+	}
 }

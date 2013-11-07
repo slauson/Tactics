@@ -30,5 +30,10 @@ public class Player {
 		
 		regions = new HashSet<Region>();
 	}
+	
+	@Override
+	public String toString() {
+		return color.toString();
+	}
 
 }

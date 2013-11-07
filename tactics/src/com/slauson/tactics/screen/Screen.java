@@ -104,7 +104,7 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 	
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		System.out.println("touchDown: " + screenX + ", " + screenY + ", " + pointer + ", " + button);
+//		System.out.println("touchDown: " + screenX + ", " + screenY + ", " + pointer + ", " + button);
 		
 		lastMousePressWorldPosition.set(screenX, screenY, 0);
 		camera.unproject(lastMousePressWorldPosition);

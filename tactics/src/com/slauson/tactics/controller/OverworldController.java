@@ -38,11 +38,14 @@ public class OverworldController extends Controller {
 	public Event touchDown(float worldX, float worldY) {
 		// check if region is selected
 		for (Region region : overworld.regionList) {
-			// only check non null regions
-			if (region != null && region.bounds.contains(worldX, worldY)) {
+			if (region.bounds.contains(worldX, worldY)) {
+				
+				System.out.println("touched: " + region);
 				
 				// there's a currently selected region
 				if (selectedRegion != null) {
+					
+					System.out.println("deselected: " + selectedRegion);
 					
 					// unselect previously selected region
 					selectedRegion.selected = false;
@@ -130,6 +133,8 @@ public class OverworldController extends Controller {
 					// select new selected region
 					selectedRegion = region;
 					selectedRegion.selected = true;
+					
+					System.out.println("selected: " + selectedRegion);
 					
 					markRegionNeighbors(selectedRegion);
 				}
@@ -424,6 +429,8 @@ public class OverworldController extends Controller {
 	 */
 	private Region handleBattleSingleAttack(Region attackingRegion, Region defendingRegion) {
 		
+		System.out.println("battle (" + attackingRegion + ") vs (" + defendingRegion + ")");
+		
 		// only allow a single attack
 		attackingRegion.unit.state = State.IDLE;
 		
@@ -509,6 +516,8 @@ public class OverworldController extends Controller {
 		// update health
 		attackingRegion.unit.health -= defenderAttackDamage;
 		defendingRegion.unit.health -= attackerAttackDamage;
+		
+		System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
 		
 		// special case of both units defeated
 		if (defendingRegion.unit.health <= 0 && attackingRegion.unit.health <= 0) {
