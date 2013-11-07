@@ -507,10 +507,10 @@ public class OverworldController extends Controller {
 		float defenderAttackDamage = defendFactor * defendingRegion.unit.health;
 		
 		// special case for ranged units
-		if (attackingRegion.unit.type.isRanged() && !defendingRegion.unit.type.isRanged()) {
+		if ((attackingRegion.unit.type.isRanged() && !defendingRegion.unit.type.isRanged()) ||
+				defendingRegion.unit.type.isRanged() && !attackingRegion.unit.type.isRanged())
+		{
 			defenderAttackDamage = Float.MIN_VALUE; // use min value instead of 0 to allow division below
-		} else if (defendingRegion.unit.type.isRanged() && !attackingRegion.unit.type.isRanged()) {
-			attackerAttackDamage = Float.MIN_VALUE; // use min value instead of 0 to allow division below
 		}
 		
 		// update health
