@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.model.Unit.State;
 
 /**
  * Renders the overworld.
@@ -64,7 +65,7 @@ public class OverworldRenderer extends Renderer {
 			if (region.unit != null) {
 			
 				// player with current turn has black units
-				if (region.player == overworld.players[overworld.playerTurnIndex]) {
+				if (region.player == overworld.players[overworld.playerTurnIndex] && region.unit.state == State.ACTIVE) {
 					renderer.setColor(Color.BLACK);
 				}
 				// other players are lighter

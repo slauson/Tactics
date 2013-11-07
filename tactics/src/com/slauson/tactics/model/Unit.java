@@ -25,7 +25,7 @@ public class Unit {
 	}
 	
 	public enum State {
-		ATTACKING, DEFENDING, IDLE, DEFENDED
+		ACTIVE, IDLE
 	}
 	
 	public final Type type;
@@ -37,6 +37,6 @@ public class Unit {
 		this.type = type;
 		this.health = health;
 		
-		state = State.IDLE;
+		state = State.ACTIVE;
 	}
 }
