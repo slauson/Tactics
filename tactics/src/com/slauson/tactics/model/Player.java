@@ -36,5 +36,4 @@ public class Player {
 	public String toString() {
 		return color.toString();
 	}
-
 }

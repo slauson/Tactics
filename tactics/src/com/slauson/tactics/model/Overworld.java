@@ -20,6 +20,19 @@ public class Overworld {
 	 * - customize # islands
 	 * - customize # regions 
 	 */
+	
+	public enum Phase {
+		ATTACK, REINFORCE;
+		
+		public Phase next() {
+			if (this == ATTACK) {
+				return REINFORCE;
+			} else {
+				return ATTACK;
+			}
+		}
+	}
+	public Phase phase;
 
 	public int width, height;
 	public Region[][] regions;
@@ -35,6 +48,8 @@ public class Overworld {
 	public Overworld(int numPlayers) {
 		width = 8;
 		height = 6;
+		
+		phase = Phase.ATTACK;
 		
 		players = new Player[numPlayers];
 		

@@ -1,6 +1,8 @@
 package com.slauson.tactics.view;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -9,6 +11,7 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.model.Overworld.Phase;
 
 /**
  * Renders the overworld.
@@ -41,6 +44,14 @@ public class OverworldRenderer extends Renderer {
 	 */
 	@Override
 	public void render(OrthographicCamera camera, float delta, boolean debug) {
+
+		if (overworld.phase == Phase.ATTACK) {
+			Gdx.gl.glClearColor(0f, 0f, 0f, 1);
+		} else {
+			Gdx.gl.glClearColor(1f, 1f, 1f, 1);
+		}
+		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		
 		renderer.setProjectionMatrix(camera.combined);
 		
 		// draw colors
@@ -52,7 +63,7 @@ public class OverworldRenderer extends Renderer {
 			}
 			// marked region
 			else if (region.marked) {
-				renderer.setColor(region.player.color.r*MARKED_REGION_COLOR_FACTOR, region.player.color.g*MARKED_REGION_COLOR_FACTOR, region.player.color.b*MARKED_REGION_COLOR_FACTOR, 0);
+				renderer.setColor(region.player.color.r*MARKED_REGION_COLOR_FACTOR, region.player.color.g*MARKED_REGION_COLOR_FACTOR, region.player.color.b*MARKED_REGION_COLOR_FACTOR, 1);
 			}
 			// normal region
 			else {
