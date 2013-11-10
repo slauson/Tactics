@@ -80,6 +80,7 @@ public class OverworldController extends Controller {
 						// has move and unoccupied region
 						else if (selectedRegion.unit.hasMove && region.unit == null) {
 							region.unit = selectedRegion.unit;
+							region.player = selectedRegion.player;
 							region.unit.hasMove = false;
 							selectedRegion.unit = null;
 							

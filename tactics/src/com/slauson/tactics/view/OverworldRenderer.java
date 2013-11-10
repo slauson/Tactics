@@ -84,7 +84,7 @@ public class OverworldRenderer extends Renderer {
 //						1);
 				
 				// size of unit is based on health
-				float sizeFactor = 0.5f + (region.unit.health / Unit.MAX_HEALTH / 2);
+				float sizeFactor = 0.25f + (region.unit.health / Unit.MAX_HEALTH * 3 / 4);
 				
 				
 				switch(region.unit.type) {
