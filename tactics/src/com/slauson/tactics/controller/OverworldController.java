@@ -79,6 +79,12 @@ public class OverworldController extends Controller {
 						}
 						// has move and unoccupied region
 						else if (selectedRegion.unit.hasMove && region.unit == null) {
+							
+							// update region count if not owned by player
+							if (region.player != selectedRegion.player) { 
+								selectedRegion.player.regions++;
+							}
+							
 							region.unit = selectedRegion.unit;
 							region.player = selectedRegion.player;
 							region.unit.hasMove = false;
@@ -246,10 +252,13 @@ public class OverworldController extends Controller {
 			// mark selected region neighbors
 			for (Region neighbor : region.neighbors) {
 				// only mark regions owned by other players for attacks
+				if (region.unit.hasAttack && region.player != neighbor.player) {
+					neighbor.marked = true;
+					hasAction = true;
+				}
 				// or unoccupied regions for moves
 				// or occupied regions owned by same player for moves
-				if ((region.unit.hasAttack && region.player != neighbor.player) ||
-						(region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))))
+				else if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove)))
 				{
 					neighbor.marked = true;
 					hasAction = true;
@@ -607,6 +616,11 @@ public class OverworldController extends Controller {
 		
 		// attacker victory
 		if (defendingRegion.unit.health <= 0) {
+
+			attackingRegion.player.regions++;
+			defendingRegion.player.regions--;
+			defendingRegion.player.units--;
+			
 			// normal attacking unit
 			if (!attackingRegion.unit.type.isRanged()) {
 				defendingRegion.player = attackingRegion.player;
@@ -625,6 +639,8 @@ public class OverworldController extends Controller {
 		else if (attackingRegion.unit.health <= 0) {
 			// remove unit from attacking region
 			attackingRegion.unit = null;
+			
+			attackingRegion.player.units--;
 			
 			return null;
 		}

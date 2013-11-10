@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.utils.Util;
 
 public class Region {
-
+	
 	private static final float SIZE = 1f;
 	private static final Color DEFAULT_COLOR = Color.WHITE;
 	

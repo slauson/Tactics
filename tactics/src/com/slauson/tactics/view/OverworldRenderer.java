@@ -21,6 +21,9 @@ public class OverworldRenderer extends Renderer {
 	private static final Color SELECTED_REGION_OUTLINE_COLOR = Color.WHITE;
 	private static final float MARKED_REGION_COLOR_FACTOR = 0.25f;
 	private static final float NON_TURN_COLOR_FACTOR = 0.5f;
+	private static final int TURN_BOX_HEIGHT = 20;
+	private static final int TURN_BOX_MIN_WIDTH = 20;
+	private static final int TURN_BOX_MAX_WIDTH = 100;
 	
 	private ShapeRenderer renderer;
 	
@@ -147,12 +150,24 @@ public class OverworldRenderer extends Renderer {
 		renderer.end();
 		
 		// draw turns
-		// TODO factor in number of player regions, unit strength, reinforcements
 		screenRenderer.begin(ShapeType.FilledRectangle);
 		for (int i = 0; i < overworld.players.length; i++) {
 			Player player = overworld.players[(i + overworld.playerTurnIndex) % overworld.players.length];
 			screenRenderer.setColor(player.color);
-			screenRenderer.filledRect(screenWidth - 20, screenHeight - (i+1)*20, 20, 20);
+			float width = (player.regions + player.units) / 2.f / overworld.regionList.size() * TURN_BOX_MAX_WIDTH;
+			if (width < TURN_BOX_MIN_WIDTH) {
+				width = TURN_BOX_MIN_WIDTH;
+			}
+			
+			// draw box
+			screenRenderer.filledRect(screenWidth - width, screenHeight - (i+1)*TURN_BOX_HEIGHT, width, TURN_BOX_HEIGHT);
+			
+			// draw reinforcement lines
+			// TODO scale these based on size of turn box?
+			screenRenderer.setColor(Color.BLACK);
+			for (int j = 0; j < player.reinforcements; j++) {
+				screenRenderer.filledRect(screenWidth - (j+1)*2, screenHeight - (i+1)*TURN_BOX_HEIGHT, 1, TURN_BOX_HEIGHT);
+			}
 		}
 		screenRenderer.end();
 		

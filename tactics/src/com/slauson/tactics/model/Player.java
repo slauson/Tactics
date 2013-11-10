@@ -1,8 +1,5 @@
 package com.slauson.tactics.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.badlogic.gdx.graphics.Color;
 
 public class Player {
@@ -15,8 +12,8 @@ public class Player {
 	
 	public Color color;
 	
-	public Set<Region> regions;
-	
+	public int regions;
+	public int units;
 	public int reinforcements;
 	
 	private static final Color[] colors = new Color[] {
@@ -30,8 +27,9 @@ public class Player {
 		color = colors[colorIndex];
 		colorIndex++;
 		
-		regions = new HashSet<Region>();
-		reinforcements = 0;
+		regions = 0;
+		units = 0;
+		reinforcements = 10;
 	}
 	
 	@Override

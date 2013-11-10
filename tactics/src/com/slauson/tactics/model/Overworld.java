@@ -243,6 +243,8 @@ public class Overworld {
 		
 		for (int i = 0; i < regionIndices.size(); i++) {
 			regionList.get(regionIndices.get(i)).player = players[playerIndex % players.length];
+			players[playerIndex % players.length].regions++;
+			players[playerIndex % players.length].units++;
 			playerIndex++;
 		}
 	}
