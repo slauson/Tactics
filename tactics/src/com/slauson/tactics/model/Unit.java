@@ -24,24 +24,22 @@ public class Unit {
 		}
 	}
 	
-	public enum State {
-		ACTIVE, IDLE
-	}
-	
 	public final Type type;
-	public State state;
-
+	
 	public float health;
+	public boolean hasMove;
+	public boolean hasAttack;
 	
 	public Unit(Type type, float health) {
 		this.type = type;
 		this.health = health;
 		
-		state = State.ACTIVE;
+		hasMove = true;
+		hasAttack = true;
 	}
 	
 	@Override
 	public String toString() {
-		return type.name() + "(" + state.name() + ", " + health + ")";
+		return type.name() + "(" + hasMove + ", " + hasAttack + ", " + health + ")";
 	}
 }

@@ -4,7 +4,6 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
-import com.slauson.tactics.model.Unit.State;
 import com.slauson.tactics.utils.Util;
 
 /**
@@ -59,75 +58,122 @@ public class OverworldController extends Controller {
 						return Event.NONE;
 					}
 					
-					// normal unit
-					if (!selectedRegion.unit.type.isRanged()) {
-						
-						// region is in selected region's neighbors 
-						if (selectedRegion.neighbors.contains(region)) {
-						
-							// owned by other player
-							if (selectedRegion.player != region.player) {
-								//attackingRegion = selectedRegion;
-								//defendingRegion = region;
-								Region updatedAttackingRegion = handleBattleSingleAttack(selectedRegion, region);
-								
-//								// keep region selected if attacker won battle
-//								if (updatedAttackingRegion != null) {
-//									selectedRegion = updatedAttackingRegion;
-//									selectedRegion.selected = true;
-//									
-//									markRegionNeighbors(selectedRegion);
-//								}
-								selectedRegion = null;
-								return Event.BATTLE_START;
-							}
-							// unoccupied region owned by same player
-							else if (region.unit == null) {
-								region.unit = selectedRegion.unit;
-								selectedRegion.unit = null;
-								selectedRegion = region;
-								selectedRegion.selected = true;
-								
-								markRegionNeighbors(selectedRegion);
-								return Event.NONE;
-							}
-						}
-					}
-					// ranged unit
-					else {
-						// check neighbors for moving unit
-						if (selectedRegion.neighbors.contains(region)) {
-							if (selectedRegion.player == region.player && region.unit == null) {
-								region.unit = selectedRegion.unit;
-								selectedRegion.unit = null;
-								selectedRegion = region;
-								selectedRegion.selected = true;
-								
-								markRegionNeighbors(selectedRegion);
-								return Event.NONE;
-							}
-						}
-						// check ranged neighbors for attacks
-						else if (selectedRegion.rangedNeighbors.contains(region) && region.unit != null) {
+					// region is in selected region's neighbors 
+					if (selectedRegion.neighbors.contains(region)) {
+					
+						// has attack and region is owned by other player
+						if (selectedRegion.unit.hasAttack && selectedRegion.player != region.player && region.unit != null) {
 							Region updatedAttackingRegion = handleBattleSingleAttack(selectedRegion, region);
 							
-//							// keep region selected if attacker won battle
-//							if (updatedAttackingRegion != null) {
+							// keep region selected if attacker won battle and can still move
+							if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
+								selectedRegion = updatedAttackingRegion;
+								selectedRegion.selected = true;
+								
+								markRegionNeighbors(selectedRegion);
+							} else {
+								selectedRegion = null;
+							}
+							
+							return Event.BATTLE_START;
+						}
+						// has move and unoccupied region
+						else if (selectedRegion.unit.hasMove && region.unit == null) {
+							region.unit = selectedRegion.unit;
+							region.unit.hasMove = false;
+							selectedRegion.unit = null;
+							
+							if (region.unit.hasAttack) {
+								selectedRegion = region;
+								selectedRegion.selected = true;
+							
+								markRegionNeighbors(selectedRegion);
+							} else {
+								selectedRegion = null;
+							}
+							return Event.NONE;
+						}
+						// has move and occupied region owned by same player who can move
+						else if (selectedRegion.unit.hasMove && selectedRegion.player == region.player && region.unit != null && region.unit.hasMove) {
+							// swap units
+							Unit temp = region.unit;
+							region.unit = selectedRegion.unit;
+							selectedRegion.unit = temp;
+							
+							region.unit.hasMove = false;
+							selectedRegion.unit.hasMove = false;
+							
+							if (region.unit.hasAttack) {
+								selectedRegion = region;
+								selectedRegion.selected = true;
+							
+								markRegionNeighbors(selectedRegion);
+							} else {
+								selectedRegion = null;
+							}
+						} else {
+							selectedRegion = null;
+						}
+					}
+					// region is in ranged unit's ranged neighbors
+					else if (selectedRegion.unit.type.isRanged() && selectedRegion.rangedNeighbors.contains(region)) {
+						// has attack and region is owned by other player
+						if (selectedRegion.player != region.player && selectedRegion.unit.hasAttack) {
+							Region updatedAttackingRegion = handleBattleSingleAttack(selectedRegion, region);
+							
+							// keep region selected if attacker won battle and can still move
+							if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
+								selectedRegion = updatedAttackingRegion;
+								selectedRegion.selected = true;
+								
+								markRegionNeighbors(selectedRegion);
+							} else {
+								selectedRegion = null;
+							}
+							
+							return Event.BATTLE_START;
+						} else {
+							selectedRegion = null;
+						}
+					} else {
+						selectedRegion = null;
+					}
+//					// ranged unit
+//					else {
+//						// check neighbors for moving unit
+//						if (selectedRegion.neighbors.contains(region)) {
+//							if (selectedRegion.player == region.player && region.unit == null) {
+//								region.unit = selectedRegion.unit;
+//								selectedRegion.unit = null;
+//								selectedRegion = region;
+//								selectedRegion.selected = true;
+//								
+//								markRegionNeighbors(selectedRegion);
+//								return Event.NONE;
+//							}
+//						}
+//						// check ranged neighbors for attacks
+//						else if (selectedRegion.rangedNeighbors.contains(region) && region.unit != null) {
+//							Region updatedAttackingRegion = handleBattleSingleAttack(selectedRegion, region);
+//							
+//							// keep region selected if attacker won battle and can still move
+//							if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
 //								selectedRegion = updatedAttackingRegion;
 //								selectedRegion.selected = true;
 //								
 //								markRegionNeighbors(selectedRegion);
 //							} else {
-							selectedRegion = null;
-							return Event.BATTLE_START;
-						}
-					}
+//								selectedRegion = null;
+//							}
+//							return Event.BATTLE_START;
+//						}
+//					}
 				}
 				
 				// only allow selecting regions with units for player who has current turn and are active
 				if (region.unit != null &&
 						region.player == overworld.players[overworld.playerTurnIndex] &&
-						region.unit.state == State.ACTIVE)
+						(region.unit.hasAttack || region.unit.hasMove))
 				{
 				
 					// select new selected region
@@ -177,69 +223,70 @@ public class OverworldController extends Controller {
 	private void setPlayerUnitsActive(Player player) {
 		for (Region region : overworld.regionList) {
 			if (region.unit != null && region.player == player) {
-				region.unit.state = State.ACTIVE;
+				region.unit.hasAttack = true;
+				region.unit.hasMove = true;
 			}
 		}
 	}
 	
 	private void markRegionNeighbors(Region region) {
-		// TODO how are we getting here?
-		if (region.unit != null) {
-			switch (region.unit.type) {
-			case CIRCLE:
-			case SQUARE:
-			case TRIANGLE:
-				// mark selected region neighbors
-				for (Region neighbor : region.neighbors) {
-					// only mark regions owned by other players
-					// or unoccupied regions owned by same player
-					if (selectedRegion.player != neighbor.player || neighbor.unit == null) {
-						neighbor.marked = true;
-					}
+		switch (region.unit.type) {
+		case CIRCLE:
+		case SQUARE:
+		case TRIANGLE:
+			// mark selected region neighbors
+			for (Region neighbor : region.neighbors) {
+				// only mark regions owned by other players for attacks
+				// or unoccupied regions for moves
+				// or occupied regions owned by same player for moves
+				if ((region.unit.hasAttack && region.player != neighbor.player) ||
+						(region.unit.hasMove && (neighbor.unit == null || region.player == neighbor.player)))
+				{
+					neighbor.marked = true;
 				}
-				break;
-			case RANGED_CIRCLE:
-			case RANGED_SQUARE:
-			case RANGED_TRIANGLE:
-				// mark selected region neighbors
-				for (Region neighbor : region.rangedNeighbors) {
-					// only mark regions owned by other players
-					// or unoccupied regions owned by same player
-					if (selectedRegion.player != neighbor.player && neighbor.unit != null) {
-						neighbor.marked = true;
-					}
-				}
-				// mark selected region neighbors
-				for (Region neighbor : region.neighbors) {
-					// only mark unoccupied regions owned by same player
-					if (selectedRegion.player == neighbor.player && neighbor.unit == null) {
-						neighbor.marked = true;
-					}
-				}
-				break;
 			}
+			break;
+		case RANGED_CIRCLE:
+		case RANGED_SQUARE:
+		case RANGED_TRIANGLE:
+			// mark selected region neighbors
+			for (Region neighbor : region.rangedNeighbors) {
+				// only mark regions owned by other players for attacks
+				if (region.unit.hasAttack && region.player != neighbor.player && neighbor.unit != null) {
+					neighbor.marked = true;
+				}
+			}
+			// mark selected region neighbors
+			for (Region neighbor : region.neighbors) {
+				// only mark unoccupied regions for moves
+				// or occupied regions owned by same player for moves
+				if (region.unit.hasMove && (neighbor.unit == null || region.player == neighbor.player)) {
+					neighbor.marked = true;
+				}
+			}
+			break;
 		}
 	}
 	
 	private void unmarkRegionNeighbors(Region region) {
-		// TODO how are we getting here?
-		if (region.unit != null) {
-			switch (region.unit.type) {
-			case CIRCLE:
-			case SQUARE:
-			case TRIANGLE:
-				for (Region neighbor : selectedRegion.neighbors) {
-					neighbor.marked = false;
-				}
-				break;
-			case RANGED_CIRCLE:
-			case RANGED_SQUARE:
-			case RANGED_TRIANGLE:
-				for (Region neighbor : selectedRegion.rangedNeighbors) {
-					neighbor.marked = false;
-				}
-				break;
+		switch (region.unit.type) {
+		case CIRCLE:
+		case SQUARE:
+		case TRIANGLE:
+			for (Region neighbor : region.neighbors) {
+				neighbor.marked = false;
 			}
+			break;
+		case RANGED_CIRCLE:
+		case RANGED_SQUARE:
+		case RANGED_TRIANGLE:
+			for (Region neighbor : region.neighbors) {
+				neighbor.marked = false;
+			}
+			for (Region neighbor : region.rangedNeighbors) {
+				neighbor.marked = false;
+			}
+			break;
 		}
 	}
 	
@@ -432,16 +479,16 @@ public class OverworldController extends Controller {
 		System.out.println("battle (" + attackingRegion + ") vs (" + defendingRegion + ")");
 		
 		// only allow a single attack
-		attackingRegion.unit.state = State.IDLE;
+		attackingRegion.unit.hasAttack = false;
 		
 		// special case of no defending unit
-		if (defendingRegion.unit == null) {
-			// move attacking unit to defending region
-			defendingRegion.player = attackingRegion.player;
-			defendingRegion.unit = attackingRegion.unit;
-			attackingRegion.unit = null;
-			return defendingRegion;
-		}
+//		if (defendingRegion.unit == null) {
+//			// move attacking unit to defending region
+//			defendingRegion.player = attackingRegion.player;
+//			defendingRegion.unit = attackingRegion.unit;
+//			attackingRegion.unit = null;
+//			return defendingRegion;
+//		}
 		
 		// calculate attack factor for attacking region 
 		float attackFactor = 1f;

@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
-import com.slauson.tactics.model.Unit.State;
 
 /**
  * Renders the overworld.
@@ -65,7 +64,7 @@ public class OverworldRenderer extends Renderer {
 			if (region.unit != null) {
 			
 				// player with current turn has black units
-				if (region.player == overworld.players[overworld.playerTurnIndex] && region.unit.state == State.ACTIVE) {
+				if (region.player == overworld.players[overworld.playerTurnIndex] && (region.unit.hasAttack || region.unit.hasMove)) {
 					renderer.setColor(Color.BLACK);
 				}
 				// other players are lighter
@@ -109,9 +108,9 @@ public class OverworldRenderer extends Renderer {
 					break;
 				case RANGED_CIRCLE:
 					renderer.begin(ShapeType.FilledCircle);
-					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
-//					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 - 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
-//					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
+					//renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
+					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 - 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
+					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
 					renderer.end();
 					renderer.identity();
 					break;
