@@ -5,22 +5,27 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont.TextBounds;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 
 public abstract class Renderer {
 
 	private static final int FPS_MIN_CHANGE = 5;
 	
-	protected SpriteBatch spriteBatch;
-	protected BitmapFont font;
-	
 	private int fps;
-	protected int width, height;
+	
+	protected SpriteBatch screenSpriteBatch;
+	protected ShapeRenderer screenRenderer;
+	protected BitmapFont screenFont;
+	
+	protected int screenWidth, screenHeight;
 	
 	public Renderer() {
-		this.spriteBatch = new SpriteBatch();
-		this.font = new BitmapFont();
+		screenSpriteBatch = new SpriteBatch();
+		screenRenderer = new ShapeRenderer();
+		screenFont = new BitmapFont();
 		
-		this.fps = 0;
+		fps = 0;
 	}
 	
 	/**
@@ -29,8 +34,12 @@ public abstract class Renderer {
 	 * @param height
 	 */
 	public void resize(int width, int height) {
-		this.width = width;
-		this.height = height;
+		screenWidth = width;
+		screenHeight = height;
+		
+		// reset the sprite batch
+		screenSpriteBatch = new SpriteBatch();
+		screenRenderer = new ShapeRenderer();
 	}
 	
 	public void render(OrthographicCamera camera, float delta, boolean debug) {
@@ -45,12 +54,12 @@ public abstract class Renderer {
 			}
 			
 			String fpsText = "FPS: " + fps;
-			spriteBatch.begin();
-			font.setColor(Color.WHITE);
-			TextBounds bounds = font.getBounds(fpsText);
+			screenSpriteBatch.begin();
+			screenFont.setColor(Color.WHITE);
+			//TextBounds bounds = font.getBounds(fpsText);
 			// draws from top left of text
-			font.draw(spriteBatch, fpsText, width - bounds.width, height);
-			spriteBatch.end();
+			screenFont.draw(screenSpriteBatch, fpsText, 0, screenHeight);
+			screenSpriteBatch.end();
 		}
 	}
 }

@@ -229,7 +229,15 @@ public class OverworldController extends Controller {
 		}
 	}
 	
-	private void markRegionNeighbors(Region region) {
+	/**
+	 * Marks neighboring regions depending on available actions for unit at given region.
+	 * @param region
+	 * @return true if unit has action
+	 */
+	private boolean markRegionNeighbors(Region region) {
+		
+		boolean hasAction = false;
+		
 		switch (region.unit.type) {
 		case CIRCLE:
 		case SQUARE:
@@ -240,9 +248,10 @@ public class OverworldController extends Controller {
 				// or unoccupied regions for moves
 				// or occupied regions owned by same player for moves
 				if ((region.unit.hasAttack && region.player != neighbor.player) ||
-						(region.unit.hasMove && (neighbor.unit == null || region.player == neighbor.player)))
+						(region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))))
 				{
 					neighbor.marked = true;
+					hasAction = true;
 				}
 			}
 			break;
@@ -254,20 +263,28 @@ public class OverworldController extends Controller {
 				// only mark regions owned by other players for attacks
 				if (region.unit.hasAttack && region.player != neighbor.player && neighbor.unit != null) {
 					neighbor.marked = true;
+					hasAction = true;
 				}
 			}
 			// mark selected region neighbors
 			for (Region neighbor : region.neighbors) {
 				// only mark unoccupied regions for moves
 				// or occupied regions owned by same player for moves
-				if (region.unit.hasMove && (neighbor.unit == null || region.player == neighbor.player)) {
+				if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))) {
 					neighbor.marked = true;
+					hasAction = true;
 				}
 			}
 			break;
 		}
+		
+		return hasAction;
 	}
 	
+	/**
+	 * Unmarks all neighboring regions for given region.
+	 * @param region
+	 */
 	private void unmarkRegionNeighbors(Region region) {
 		switch (region.unit.type) {
 		case CIRCLE:
@@ -296,7 +313,7 @@ public class OverworldController extends Controller {
 	 * @param defendingRegion
 	 * @return attacker's updated region
 	 */
-	private Region handleBattle(Region attackingRegion, Region defendingRegion) {
+	/*private Region handleBattle(Region attackingRegion, Region defendingRegion) {
 		
 		// special case of no defending unit
 		if (defendingRegion.unit == null) {
@@ -466,7 +483,7 @@ public class OverworldController extends Controller {
 				return attackingRegion;
 			}
 		}
-	}
+	}*/
 	
 	/**
 	 * Handles battle between two regions.

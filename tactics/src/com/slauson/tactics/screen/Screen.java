@@ -72,6 +72,8 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 		camera.translate(oldCameraPosition.x - camera.position.x, oldCameraPosition.y - camera.position.y);
 		camera.update();
 		
+		System.out.println("camera at: " + camera.position.x + ", " + camera.position.y);
+		
 		renderer.resize(width, height);
 	}
 

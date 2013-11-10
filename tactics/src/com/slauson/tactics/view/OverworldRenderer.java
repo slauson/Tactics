@@ -4,7 +4,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Matrix4;
 import com.slauson.tactics.model.Overworld;
+import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 
@@ -143,6 +145,16 @@ public class OverworldRenderer extends Renderer {
 			renderer.rect(region.position.x, region.position.y, region.bounds.width, region.bounds.height);
 		}
 		renderer.end();
+		
+		// draw turns
+		// TODO factor in number of player regions, unit strength, reinforcements
+		screenRenderer.begin(ShapeType.FilledRectangle);
+		for (int i = 0; i < overworld.players.length; i++) {
+			Player player = overworld.players[(i + overworld.playerTurnIndex) % overworld.players.length];
+			screenRenderer.setColor(player.color);
+			screenRenderer.filledRect(screenWidth - 20, screenHeight - (i+1)*20, 20, 20);
+		}
+		screenRenderer.end();
 		
 		super.render(camera, delta, debug);
 	}

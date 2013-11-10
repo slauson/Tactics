@@ -17,6 +17,8 @@ public class Player {
 	
 	public Set<Region> regions;
 	
+	public int reinforcements;
+	
 	private static final Color[] colors = new Color[] {
 		Color.RED, Color.GREEN, Color.BLUE, Color.ORANGE, Color.MAGENTA, Color.YELLOW
 	};
@@ -29,6 +31,7 @@ public class Player {
 		colorIndex++;
 		
 		regions = new HashSet<Region>();
+		reinforcements = 0;
 	}
 	
 	@Override
