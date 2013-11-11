@@ -3,7 +3,6 @@ package com.slauson.tactics.screen;
 import com.slauson.tactics.TacticsGame;
 import com.slauson.tactics.controller.OverworldController;
 import com.slauson.tactics.model.Overworld;
-import com.slauson.tactics.model.Region;
 import com.slauson.tactics.view.OverworldRenderer;
 
 /**
@@ -33,17 +32,7 @@ public class OverworldScreen extends Screen {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		super.touchDown(screenX, screenY, pointer, button);
-		
-		switch(controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y)) {
-		case BATTLE_START:
-			// go to battle screen
-			//game.showBattle(((OverworldController)controller).attackingRegion, ((OverworldController)controller).defendingRegion);
-			break;
-		default:
-			// do nothing
-			break;
-		}
-		
+		controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y);
 		return true;
 	}
 	
@@ -52,9 +41,5 @@ public class OverworldScreen extends Screen {
 		controller.keyTyped(character);
 		super.keyTyped(character);
 		return true;
-	}
-
-	public void battleResult(Region victorRegion, Region defeatedRegion) {
-		((OverworldController)controller).battleResult(victorRegion, defeatedRegion);
 	}
 }

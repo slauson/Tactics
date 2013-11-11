@@ -9,10 +9,6 @@ public abstract class Controller {
 
 	protected static final float MAX_DELTA = 0.1f;
 	
-	public enum Event {
-		NONE, BATTLE_START, BATTLE_END
-	};
-	
 	/**
 	 * Updates controller.
 	 * @param delta elapsed time since last update.
@@ -23,13 +19,14 @@ public abstract class Controller {
 	 * Handles touch event.
 	 * @param worldX
 	 * @param worldY
-	 * @return event type of event that needs to be handled.
+	 * @return true if touch event is handled
 	 */
-	public abstract Event touchDown(float worldX, float worldY);
+	public abstract boolean touchDown(float worldX, float worldY);
 
 	/**
 	 * Handles key events.
 	 * @param character
+	 * @return true if key event is handled
 	 */
-	public abstract void keyTyped(char character);
+	public abstract boolean keyTyped(char character);
 }

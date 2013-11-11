@@ -2,7 +2,6 @@ package com.slauson.tactics;
 
 import com.badlogic.gdx.Game;
 import com.slauson.tactics.model.Region;
-import com.slauson.tactics.screen.BattleScreen;
 import com.slauson.tactics.screen.OverworldScreen;
 
 /**
@@ -32,15 +31,6 @@ public class TacticsGame extends Game {
 	 */
 	public void showOverworld(Region victorRegion, Region defeatedRegion) {
 		setScreen(overworldScreen);
-		overworldScreen.battleResult(victorRegion, defeatedRegion);
 	}
 	
-	/**
-	 * Displays the battle screen.
-	 * @param attackingRegion attacking region
-	 * @param defendingRegion defending region
-	 */
-	public void showBattle(Region attackingRegion, Region defendingRegion) {
-		setScreen(new BattleScreen(this, attackingRegion, defendingRegion));
-	}
 }

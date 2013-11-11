@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Matrix4;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
@@ -21,7 +20,6 @@ import com.slauson.tactics.model.Overworld.Phase;
 public class OverworldRenderer extends Renderer {
 	
 	private static final Color SELECTED_REGION_COLOR = Color.WHITE;
-	private static final Color SELECTED_REGION_OUTLINE_COLOR = Color.WHITE;
 	private static final float MARKED_REGION_COLOR_FACTOR = 0.25f;
 	private static final float NON_TURN_COLOR_FACTOR = 0.5f;
 	private static final int TURN_BOX_HEIGHT = 20;
