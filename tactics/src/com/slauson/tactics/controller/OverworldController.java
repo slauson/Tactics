@@ -28,12 +28,14 @@ public class OverworldController extends Controller {
 		if (delta > MAX_DELTA) {
 			delta = MAX_DELTA;
 		}
+		
+		// check for reinforcements
 	}
 	
 	@Override
 	public boolean touchDown(float worldX, float worldY) {
 		// check if region is selected
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			if (region.bounds.contains(worldX, worldY)) {
 				
 				System.out.println("touched: " + region);
@@ -148,7 +150,7 @@ public class OverworldController extends Controller {
 					
 					// only allow selecting regions with units for player who has current turn and are active
 					if (region.unit != null &&
-							region.player == overworld.players[overworld.playerTurnIndex] &&
+							region.player == overworld.activePlayer() &&
 							(region.unit.hasAttack || region.unit.hasMove))
 					{
 					
@@ -162,13 +164,13 @@ public class OverworldController extends Controller {
 					}
 					break;
 				case REINFORCE:
-					if (region.player == overworld.players[overworld.playerTurnIndex] &&
+					if (region.player == overworld.activePlayer() &&
 							region.unit != null && region.unit.health < Unit.MAX_HEALTH &&
-							overworld.players[overworld.playerTurnIndex].reinforcements > 0)
+							overworld.activePlayer().reinforcements > 0)
 					{
 						region.unit.health = Unit.MAX_HEALTH;
 						region.marked = true;
-						overworld.players[overworld.playerTurnIndex].reinforcements--;
+						overworld.activePlayer().reinforcements--;
 						
 						System.out.println("reinforced: " + region);
 					}
@@ -195,21 +197,18 @@ public class OverworldController extends Controller {
 			}
 			
 			// move to next phase
-			overworld.phase = overworld.phase.next();
+			overworld.nextPhase();
 			
 			if (overworld.phase == Phase.ATTACK) {
 				
 				unmarkAllRegions();
 				
 				// move to next turn
-				overworld.playerTurnIndex++;
-				if (overworld.playerTurnIndex >= overworld.players.length) {
-					overworld.playerTurnIndex = 0;
-				}
+				overworld.nextTurn();
 				
-				setPlayerUnitsActive(overworld.players[overworld.playerTurnIndex]);
+				setPlayerUnitsActive(overworld.activePlayer());
 			} else {
-				markPlayerReinforcements(overworld.players[overworld.playerTurnIndex]);
+				markPlayerReinforcements(overworld.activePlayer());
 			}
 			
 			return true;
@@ -223,7 +222,7 @@ public class OverworldController extends Controller {
 	 * @param player
 	 */
 	private void setPlayerUnitsActive(Player player) {
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			if (region.unit != null && region.player == player) {
 				region.unit.hasAttack = true;
 				region.unit.hasMove = true;
@@ -317,7 +316,7 @@ public class OverworldController extends Controller {
 	 * @param player
 	 */
 	private void unmarkAllRegions() {
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			region.marked = false;
 		}
 	}
@@ -327,7 +326,7 @@ public class OverworldController extends Controller {
 	 * @param player
 	 */
 	private void markPlayerReinforcements(Player player) {
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			if (region.player != player || (region.unit != null && region.unit.health == Unit.MAX_HEALTH)) {
 				region.marked = true;
 			}

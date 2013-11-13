@@ -54,7 +54,7 @@ public class OverworldRenderer extends Renderer {
 		
 		// draw colors
 		renderer.begin(ShapeType.FilledRectangle);
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			// selected region
 			if (region.selected) {
 				renderer.setColor(SELECTED_REGION_COLOR);
@@ -73,12 +73,12 @@ public class OverworldRenderer extends Renderer {
 		renderer.end();
 		
 		// draw units
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			
 			if (region.unit != null) {
 			
 				// player with current turn has black units
-				if (region.player == overworld.players[overworld.playerTurnIndex] && (region.unit.hasAttack || region.unit.hasMove)) {
+				if (region.player == overworld.activePlayer() && (region.unit.hasAttack || region.unit.hasMove)) {
 					renderer.setColor(Color.BLACK);
 				}
 				// other players are lighter
@@ -153,17 +153,17 @@ public class OverworldRenderer extends Renderer {
 		// draw outline
 		renderer.begin(ShapeType.Rectangle);
 		renderer.setColor(Color.BLACK);
-		for (Region region : overworld.regionList) {
+		for (Region region : overworld.regions) {
 			renderer.rect(region.position.x, region.position.y, region.bounds.width, region.bounds.height);
 		}
 		renderer.end();
 		
 		// draw turns
 		screenRenderer.begin(ShapeType.FilledRectangle);
-		for (int i = 0; i < overworld.players.length; i++) {
-			Player player = overworld.players[(i + overworld.playerTurnIndex) % overworld.players.length];
+		for (int i = 0; i < overworld.players.size(); i++) {
+			Player player = overworld.players.get((i + overworld.activePlayerIndex()) % overworld.players.size());
 			screenRenderer.setColor(player.color);
-			float width = (player.regions + player.units) / 2.f / overworld.regionList.size() * TURN_BOX_MAX_WIDTH;
+			float width = (player.regions + player.units) / 2.f / overworld.regions.size() * TURN_BOX_MAX_WIDTH;
 			if (width < TURN_BOX_MIN_WIDTH) {
 				width = TURN_BOX_MIN_WIDTH;
 			}
