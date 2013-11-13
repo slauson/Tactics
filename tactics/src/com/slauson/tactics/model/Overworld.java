@@ -99,6 +99,27 @@ public class Overworld {
 		return playerTurnIndex;
 	}
 	
+	/**
+	 * Returns the region containing the given point, if any.
+	 * Assumes the following is true:
+	 *  regions are of size 1,
+	 *  overworld is centered at 0,0,
+	 *  overworld width/height is even
+	 * @param worldX
+	 * @param worldY
+	 * @return
+	 */
+	public Region getContainingRegion(float worldX, float worldY) {
+		worldX += width/2;
+		worldY += height/2;
+		
+		if (worldX >= 0 && worldX < width && worldY >= 0 && worldY < height) {
+			return regionsArray[(int)worldX][(int)worldY];
+		}
+		
+		return null;
+	}
+	
 	private void testOverworld() {
 		
 		int numIslands = 4;
