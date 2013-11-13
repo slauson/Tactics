@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 
 public class Player {
 	
-	public static int NUM_FREE_REINFORCEMENTS = 10;
+	public static int NUM_FREE_REINFORCEMENTS = 3;
 	public static int NUM_REINFORCEMENTS_PER_ISLAND = 1;
 	
 	public enum Type {

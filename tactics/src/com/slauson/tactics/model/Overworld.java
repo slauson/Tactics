@@ -70,7 +70,7 @@ public class Overworld {
 	 * Moves to next phase.
 	 */
 	public void nextPhase() {
-		phase.next();
+		phase = phase.next();
 	}
 	
 	/**
@@ -148,7 +148,7 @@ public class Overworld {
 		
 		// top right
 		regionsArray[4][4] = new Region(new Vector2(0, 1));
-		islands.get(2).regions.add(regionsArray[0][1]);
+		islands.get(2).regions.add(regionsArray[4][4]);
 		regions.add(regionsArray[4][4]);
 		regionsArray[4][5] = new Region(new Vector2(0, 2));
 		islands.get(2).regions.add(regionsArray[4][5]);

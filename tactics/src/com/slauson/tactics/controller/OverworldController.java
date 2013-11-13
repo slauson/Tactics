@@ -1,5 +1,6 @@
 package com.slauson.tactics.controller;
 
+import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
 import com.slauson.tactics.model.Player;
@@ -28,8 +29,6 @@ public class OverworldController extends Controller {
 		if (delta > MAX_DELTA) {
 			delta = MAX_DELTA;
 		}
-		
-		// check for reinforcements
 	}
 	
 	@Override
@@ -208,6 +207,8 @@ public class OverworldController extends Controller {
 				
 				setPlayerUnitsActive(overworld.activePlayer());
 			} else {
+				// handle reinforcements
+				updatePlayerReinforcements(overworld.activePlayer());
 				markPlayerReinforcements(overworld.activePlayer());
 			}
 			
@@ -322,7 +323,7 @@ public class OverworldController extends Controller {
 	}
 	
 	/**
-	 * Marks regions for player reinformcents.
+	 * Marks regions for player reinforcements.
 	 * @param player
 	 */
 	private void markPlayerReinforcements(Player player) {
@@ -331,6 +332,30 @@ public class OverworldController extends Controller {
 				region.marked = true;
 			}
 		}
+	}
+	
+	/**
+	 * Updates reinforcements for given player.
+	 * @param player
+	 */
+	private void updatePlayerReinforcements(Player player) {
+		
+		int newReinforcements = 0;
+		
+		for (Island island : overworld.islands) {
+			
+			boolean playerOwnsIsland = true;
+			
+			for (int i = 0; i < island.regions.size() && playerOwnsIsland; i++) {
+				playerOwnsIsland &= (island.regions.get(i).player == player);
+			}
+			
+			if (playerOwnsIsland) {
+				newReinforcements++;
+			}
+		}
+		
+		player.reinforcements += newReinforcements;
 	}
 	
 	/**

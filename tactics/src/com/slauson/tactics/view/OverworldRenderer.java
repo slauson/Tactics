@@ -78,7 +78,7 @@ public class OverworldRenderer extends Renderer {
 			if (region.unit != null) {
 			
 				// player with current turn has black units
-				if (region.player == overworld.activePlayer() && (region.unit.hasAttack || region.unit.hasMove)) {
+				if (region.player == overworld.activePlayer() && (region.unit.hasAttack || region.unit.hasMove || overworld.phase == Phase.REINFORCE)) {
 					renderer.setColor(Color.BLACK);
 				}
 				// other players are lighter
