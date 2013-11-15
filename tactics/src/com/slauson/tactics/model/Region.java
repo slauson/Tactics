@@ -1,8 +1,5 @@
 package com.slauson.tactics.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.utils.Util;
@@ -11,8 +8,7 @@ public class Region {
 	
 	private static final float SIZE = 1f;
 	
-	public List<Region> neighbors;
-	public List<Region> rangedNeighbors;
+	public Neighbors neighbors;
 	
 	public Player player;
 	
@@ -36,15 +32,14 @@ public class Region {
 		selected = false;
 		marked = false;
 		
-		neighbors = new ArrayList<Region>();
-		rangedNeighbors = new ArrayList<Region>();
+		neighbors = new Neighbors();
 		
 		testRegion();
 	}
 	
 	private void testRegion() {
-		int typeIndex = Util.random().nextInt(Unit.Type.values().length);
-		unit = new Unit(Unit.Type.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
+		int typeIndex = Util.random().nextInt(Unit.UnitType.values().length);
+		unit = new Unit(Unit.UnitType.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
 	}
 	
 	@Override

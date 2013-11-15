@@ -2,9 +2,9 @@ package com.slauson.tactics.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import com.badlogic.gdx.math.Vector2;
+import com.slauson.tactics.model.Neighbors.NeighborType;
 import com.slauson.tactics.model.Player.Type;
 import com.slauson.tactics.utils.Util;
 
@@ -14,13 +14,6 @@ import com.slauson.tactics.utils.Util;
  *
  */
 public class Overworld {
-	
-	/*
-	 * TODO
-	 * - customize size
-	 * - customize # islands
-	 * - customize # regionsArray 
-	 */
 	
 	public enum Phase {
 		ATTACK, REINFORCE;
@@ -216,81 +209,70 @@ public class Overworld {
 					// surrounding regionsArray
 					// left
 					if (column - 1 >= 0 && regionsArray[column-1][row] != null) {
-						regionsArray[column][row].neighbors.add(regionsArray[column-1][row]);
+						regionsArray[column][row].neighbors.add(regionsArray[column-1][row], NeighborType.DIRECT);
 					}
 					// up
 					if (row + 1 < regionsArray[column].length && regionsArray[column][row+1] != null) {
-						regionsArray[column][row].neighbors.add(regionsArray[column][row+1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column][row+1], NeighborType.DIRECT);
 					}
 					// right
 					if (column + 1 < regionsArray.length && regionsArray[column+1][row] != null) {
-						regionsArray[column][row].neighbors.add(regionsArray[column+1][row]);
+						regionsArray[column][row].neighbors.add(regionsArray[column+1][row], NeighborType.DIRECT);
 					}
 					// down
 					if (row - 1 >= 0 && regionsArray[column][row-1] != null) {
-						regionsArray[column][row].neighbors.add(regionsArray[column][row-1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column][row-1], NeighborType.DIRECT);
 					}
 					
-					// across regionsArray
-//					// left
-//					if (column - 1 >= 0 && regionsArray[column-1][row] == null &&
-//							column - 2 >= 0 && regionsArray[column-2][row] != null)
-//					{
-//						regionsArray[column][row].neighbors.add(regionsArray[column-2][row]);
-//					}
-//					// up
-//					if (row + 1 < regionsArray[column].length && regionsArray[column][row+1] == null &&
-//							row + 2 < regionsArray[column].length && regionsArray[column][row+2] != null)
-//					{
-//						regionsArray[column][row].neighbors.add(regionsArray[column][row+2]);
-//					}
-//					// right
-//					if (column + 1 < regionsArray.length && regionsArray[column+1][row] == null &&
-//							column + 2 < regionsArray.length && regionsArray[column+2][row] != null)
-//					{
-//						regionsArray[column][row].neighbors.add(regionsArray[column+2][row]);
-//					}
-//					// down
-//					if (row - 1 >= 0 && regionsArray[column][row-1] == null &&
-//							row - 2 >= 0 && regionsArray[column][row-2] != null)
-//					{
-//						regionsArray[column][row].neighbors.add(regionsArray[column][row-2]);
-//					}
-					
 					// ranged neighbors
-					
 					// left
 					if (column - 2 >= 0 && regionsArray[column-2][row] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column-2][row]);
+						if (regionsArray[column-1][row] == null) {
+							regionsArray[column][row].neighbors.add(regionsArray[column-2][row], NeighborType.RANGED_INTER_ISLAND);
+						} else {
+							regionsArray[column][row].neighbors.add(regionsArray[column-2][row], NeighborType.RANGED);
+						}
 					}
 					// up
 					if (row + 2 < regionsArray[column].length && regionsArray[column][row+2] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column][row+2]);
+						if (regionsArray[column][row+1] == null) {
+							regionsArray[column][row].neighbors.add(regionsArray[column][row+2], NeighborType.RANGED_INTER_ISLAND);
+						} else {
+							regionsArray[column][row].neighbors.add(regionsArray[column][row+2], NeighborType.RANGED);
+						}
 					}
 					// right
 					if (column + 2 < regionsArray.length && regionsArray[column+2][row] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column+2][row]);
+						if (regionsArray[column+1][row] == null) {
+							regionsArray[column][row].neighbors.add(regionsArray[column+2][row], NeighborType.RANGED_INTER_ISLAND);
+						} else {
+							regionsArray[column][row].neighbors.add(regionsArray[column+2][row], NeighborType.RANGED);
+						}
 					}
 					// down
 					if (row - 2 >= 0 && regionsArray[column][row-2] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column][row-2]);
+						if (regionsArray[column][row-1] == null) {
+							regionsArray[column][row].neighbors.add(regionsArray[column][row-2], NeighborType.RANGED_INTER_ISLAND);
+						} else {
+							regionsArray[column][row].neighbors.add(regionsArray[column][row-2], NeighborType.RANGED);
+						}
 					}
 					
 					// up left
 					if (column - 1 >= 0 && row + 1 < regionsArray[column-1].length && regionsArray[column-1][row+1] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column-1][row+1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column-1][row+1], NeighborType.RANGED);
 					}
 					// up right
 					if (column + 1 < regionsArray.length && row + 1 < regionsArray[column+1].length && regionsArray[column+1][row+1] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column+1][row+1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column+1][row+1], NeighborType.RANGED);
 					}
 					// down left
 					if (column - 1 >= 0 && row - 1 >= 0 && regionsArray[column-1][row-1] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column-1][row-1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column-1][row-1], NeighborType.RANGED);
 					}
 					// down right
 					if (column + 1 < regionsArray.length && row - 1 >= 0 && regionsArray[column+1][row-1] != null) {
-						regionsArray[column][row].rangedNeighbors.add(regionsArray[column+1][row-1]);
+						regionsArray[column][row].neighbors.add(regionsArray[column+1][row-1], NeighborType.RANGED);
 					}
 				}
 			}
