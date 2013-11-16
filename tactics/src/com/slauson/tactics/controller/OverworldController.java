@@ -8,6 +8,7 @@ import com.slauson.tactics.model.Overworld.Phase;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.model.Unit.UnitType;
 import com.slauson.tactics.utils.Util;
 
 /**
@@ -145,13 +146,40 @@ public class OverworldController extends Controller {
 				}
 				break;
 			case REINFORCE:
-				if (region.player == overworld.activePlayer() &&
-						region.unit != null && region.unit.health < Unit.MAX_HEALTH &&
-						overworld.activePlayer().reinforcements > 0)
-				{
-					region.unit.health = Unit.MAX_HEALTH;
-					region.marked = true;
-					overworld.activePlayer().reinforcements--;
+				if (region.player == overworld.activePlayer()) {
+					
+					// existing unit
+					if (overworld.activePlayer().reinforcements > 0 && region.unit != null && region.unit.health < Unit.MAX_HEALTH) {
+						
+						// mark previously selected region
+						if (selectedRegion != null) {
+							selectedRegion.marked = true;
+							selectedRegion.selected = false;
+						}
+						
+						region.unit.health = Unit.MAX_HEALTH;
+						region.marked = true;
+						selectedRegion = null;
+						overworld.activePlayer().reinforcements--;
+					}
+					// new unit
+					else if (overworld.activePlayer().reinforcements > 0 && region.unit == null) {
+						
+						// mark previously selected region
+						if (selectedRegion != null) {
+							selectedRegion.marked = true;
+							selectedRegion.selected = false;
+						}
+						
+						region.unit = new Unit(UnitType.values()[0], Unit.MAX_HEALTH);
+						selectedRegion = region;
+						selectedRegion.selected = true;
+						overworld.activePlayer().reinforcements--;
+					}
+					// switch unit type of new unit
+					else if (region == selectedRegion) {
+						region.unit.type = region.unit.type.next();
+					}
 					
 					System.out.println("reinforced: " + region);
 				}

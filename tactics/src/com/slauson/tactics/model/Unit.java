@@ -19,12 +19,38 @@ public class Unit {
 		/* Strong against circle, weak against square */
 		TRIANGLE, RANGED_TRIANGLE;
 		
+		/**
+		 * Returns true if unit is ranged.
+		 * @return
+		 */
 		public boolean isRanged() {
 			return this == UnitType.RANGED_CIRCLE || this == UnitType.RANGED_SQUARE || this == UnitType.RANGED_TRIANGLE;
 		}
+		
+		/**
+		 * Returns next unit type.
+		 * @return
+		 */
+		public UnitType next() {
+			switch (this) {
+			default:
+			case CIRCLE:
+				return SQUARE;
+			case SQUARE:
+				return TRIANGLE;
+			case TRIANGLE:
+				return RANGED_CIRCLE;
+			case RANGED_CIRCLE:
+				return RANGED_SQUARE;
+			case RANGED_SQUARE:
+				return RANGED_TRIANGLE;
+			case RANGED_TRIANGLE:
+				return CIRCLE;
+			}
+		}
 	}
 	
-	public final UnitType type;
+	public UnitType type;
 	
 	public float health;
 	public boolean hasMove;
