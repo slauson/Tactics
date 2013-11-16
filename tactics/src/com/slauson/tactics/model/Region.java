@@ -37,13 +37,17 @@ public class Region {
 		testRegion();
 	}
 	
-	private void testRegion() {
-		int typeIndex = Util.random().nextInt(Unit.UnitType.values().length);
-		unit = new Unit(Unit.UnitType.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
+	public float simpleDistanceTo(Region other) {
+		return Math.abs(position.x - other.position.x) + Math.abs(position.y - other.position.y);
 	}
 	
 	@Override
 	public String toString() {
 		return position.x + ", " + position.y + ": " + player + " - " + unit;
+	}
+	
+	private void testRegion() {
+		int typeIndex = Util.random().nextInt(Unit.UnitType.values().length);
+		unit = new Unit(Unit.UnitType.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
 	}
 }

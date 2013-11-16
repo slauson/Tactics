@@ -5,42 +5,19 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.badlogic.gdx.math.Vector2;
-import com.slauson.tactics.utils.MultiIterator;
+import com.slauson.tactics.model.Neighbor.NeighborType;
 
 /**
  * "List" of neighbors with different types.
  * @author josh
  *
  */
-public class Neighbors implements Iterable<Region> {
-
-	public enum NeighborType {
-		DIRECT, RANGED, RANGED_INTER_ISLAND;
-		
-		public boolean isRanged() {
-			return (this != DIRECT);
-		}
-	}
+public class Neighbors implements Iterable<Neighbor> {
 	
-	public Set<Region> directNeighbors;
-	public Set<Region> rangedNeighbors;
-	public Set<Region> rangedInterIslandNeighbors;
+	private Set<Neighbor> neighbors;
 	
-	private MultiIterator<Region> iterator;
-	private boolean[] iteratedNeighborTypes;
-	
-	@SuppressWarnings("unchecked")
 	public Neighbors() {
-		directNeighbors = new HashSet<Region>(4);
-		rangedNeighbors = new HashSet<Region>(4);
-		rangedInterIslandNeighbors = new HashSet<Region>(4);
-		
-		iterator = new MultiIterator<Region>(directNeighbors, rangedNeighbors, rangedInterIslandNeighbors);
-		iteratedNeighborTypes = new boolean[NeighborType.values().length];
-		
-		for (int i = 0; i < iteratedNeighborTypes.length; i++) {
-			iteratedNeighborTypes[i] = true;
-		}
+		neighbors = new HashSet<Neighbor>(12);
 	}
 	
 	/**
@@ -49,56 +26,36 @@ public class Neighbors implements Iterable<Region> {
 	 * @param type
 	 */
 	public void add(Region region, NeighborType type) {
-		switch (type) {
-		case DIRECT:
-			directNeighbors.add(region);
-			break;
-		case RANGED:
-			rangedNeighbors.add(region);
-			break;
-		case RANGED_INTER_ISLAND:
-			rangedInterIslandNeighbors.add(region);
-			break;
-		}
+		neighbors.add(new Neighbor(region, type));
 	}
 	
 	/**
-	 * Returns neighbor type if given region is a neighbor, otherwise null.
+	 * Returns true if given region is a neighbor.
 	 * @param region
 	 * @return
 	 */
-	public NeighborType contains(Region region) {
-		if (directNeighbors.contains(region)) {
-			return NeighborType.DIRECT;
-		} else if (rangedNeighbors.contains(region)) {
-			return NeighborType.RANGED;
-		} else if (rangedInterIslandNeighbors.contains(region)) {
-			return NeighborType.RANGED_INTER_ISLAND;
+	public boolean contains(Region region) {
+		return neighbors.contains(region);
+	}
+	
+	/**
+	 * Returns neighbor type of given region, otherwise null.
+	 * @param region
+	 * @return
+	 */
+	public NeighborType getNeighborType(Region region) {
+		for (Neighbor neighbor : neighbors) {
+			if (neighbor.region == region) {
+				return neighbor.type;
+			}
 		}
 		
 		return null;
 	}
 
 	@Override
-	public Iterator<Region> iterator() {
-		return iterator.reset(iteratedNeighborTypes);
-	}
-	
-	/**
-	 * Sets types of neighbors to iterate.
-	 * @param iterated
-	 */
-	public void setIteratedTypes(NeighborType... iterated) {
-		
-		// reset iterated types
-		for (int i = 0; i < iteratedNeighborTypes.length; i++) {
-			iteratedNeighborTypes[i] = false;
-		}
-		
-		// set iterated types
-		for (NeighborType neighborType : iterated) {
-			iteratedNeighborTypes[neighborType.ordinal()] = true;
-		}
+	public Iterator<Neighbor> iterator() {
+		return neighbors.iterator();
 	}
 	
 	public static void main(String[] args) {
@@ -133,20 +90,8 @@ public class Neighbors implements Iterable<Region> {
 		neighbors.add(region12, NeighborType.RANGED_INTER_ISLAND);
 		
 		System.out.println("All neighbors");
-		for (Region region : neighbors) {
-			System.out.println(region);
-		}
-		
-		System.out.println("Direct neighbors");
-		neighbors.setIteratedTypes(NeighborType.DIRECT);
-		for (Region region : neighbors) {
-			System.out.println(region);
-		}
-		
-		System.out.println("Ranged neighbors");
-		neighbors.setIteratedTypes(NeighborType.RANGED, NeighborType.RANGED_INTER_ISLAND);
-		for (Region region : neighbors) {
-			System.out.println(region);
+		for (Neighbor neighbor : neighbors) {
+			System.out.println(neighbor);
 		}
 	}
 }

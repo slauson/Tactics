@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
-import com.slauson.tactics.model.Neighbors.NeighborType;
+import com.slauson.tactics.model.Neighbor.NeighborType;
 import com.slauson.tactics.model.Player.Type;
 import com.slauson.tactics.utils.Util;
 

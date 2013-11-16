@@ -1,7 +1,8 @@
 package com.slauson.tactics.controller;
 
 import com.slauson.tactics.model.Island;
-import com.slauson.tactics.model.Neighbors.NeighborType;
+import com.slauson.tactics.model.Neighbor;
+import com.slauson.tactics.model.Neighbor.NeighborType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
 import com.slauson.tactics.model.Player;
@@ -60,7 +61,7 @@ public class OverworldController extends Controller {
 					}
 					
 					// region is in selected region's neighbors
-					NeighborType neighborType = selectedRegion.neighbors.contains(region);
+					NeighborType neighborType = selectedRegion.neighbors.getNeighborType(region);
 					if (neighborType != null) {
 						
 						// attack
@@ -224,60 +225,40 @@ public class OverworldController extends Controller {
 		case CIRCLE:
 		case SQUARE:
 		case TRIANGLE:
-			// mark selected region neighbors
-			for (Region neighbor : region.neighbors.directNeighbors) {
-				// only mark regions owned by other players for attacks
-				if (region.player != neighbor.player) {
-					neighbor.marked = true;
-					hasAction = true;
-				}
-				// or unoccupied regions for moves
+			// mark region neighbors
+			for (Neighbor neighbor : region.neighbors) {
+				// mark unoccupied direct or ranged inter island regions
 				// or occupied regions owned by same player for moves
-				else if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove)))
+				if (neighbor.type.isMovable() && region.unit.hasMove && 
+						(neighbor.region.unit == null || (region.player == neighbor.region.player && neighbor.region.unit.hasMove)))
 				{
-					neighbor.marked = true;
+					neighbor.region.marked = true;
 					hasAction = true;
 				}
-			}
-			// mark selected region inter island neighbors
-			for (Region neighbor : region.neighbors.rangedInterIslandNeighbors) {
-				// mark unoccupied regions for moves or occupied regions owned by same player for moves
-				if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))) {
-					neighbor.marked = true;
+				// only mark direct regions owned by other players for attacks
+				else if (neighbor.type == NeighborType.DIRECT && region.unit.hasAttack && region.player != neighbor.region.player) {
+					neighbor.region.marked = true;
 					hasAction = true;
 				}
+				
 			}
 			break;
 		case RANGED_CIRCLE:
 		case RANGED_SQUARE:
 		case RANGED_TRIANGLE:
-			// mark selected region neighbors
-			for (Region neighbor : region.neighbors.rangedNeighbors) {
-				// only mark regions owned by other players for attacks
-				if (region.unit.hasAttack && region.player != neighbor.player && neighbor.unit != null) {
-					neighbor.marked = true;
-					hasAction = true;
-				}
-			}
-			// mark selected region inter island neighbors
-			for (Region neighbor : region.neighbors.rangedInterIslandNeighbors) {
-				// mark regions owned by other players for attacks
-				if (region.unit.hasAttack && region.player != neighbor.player && neighbor.unit != null) {
-					neighbor.marked = true;
-					hasAction = true;
-				}
-				// or mark unoccupied regions for moves or occupied regions owned by same player for moves
-				else if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))) {
-					neighbor.marked = true;
-					hasAction = true;
-				}
-			}
-			// mark selected region neighbors
-			for (Region neighbor : region.neighbors) {
-				// only mark unoccupied regions for moves
+			// mark region neighbors
+			for (Neighbor neighbor : region.neighbors) {
+				// mark unoccupied direct or ranged inter island regions
 				// or occupied regions owned by same player for moves
-				if (region.unit.hasMove && (neighbor.unit == null || (region.player == neighbor.player && neighbor.unit.hasMove))) {
-					neighbor.marked = true;
+				if (neighbor.type.isMovable() && region.unit.hasMove && 
+						(neighbor.region.unit == null || (region.player == neighbor.region.player && neighbor.region.unit.hasMove)))
+				{
+					neighbor.region.marked = true;
+					hasAction = true;
+				}
+				// only mark ranged regions owned by other players for attacks
+				else if (neighbor.type.isRanged() && region.unit.hasAttack && region.player != neighbor.region.player && neighbor.region.unit != null) {
+					neighbor.region.marked = true;
 					hasAction = true;
 				}
 			}
@@ -292,8 +273,8 @@ public class OverworldController extends Controller {
 	 * @param region
 	 */
 	private void unmarkRegionNeighbors(Region region) {
-		for (Region neighbor : region.neighbors) {
-			neighbor.marked = false;
+		for (Neighbor neighbor : region.neighbors) {
+			neighbor.region.marked = false;
 		}
 	}
 	
