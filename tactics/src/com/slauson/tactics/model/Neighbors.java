@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.badlogic.gdx.math.Vector2;
+import com.slauson.tactics.utils.MultiIterator;
 
 /**
  * "List" of neighbors with different types.
@@ -25,14 +26,21 @@ public class Neighbors implements Iterable<Region> {
 	public Set<Region> rangedNeighbors;
 	public Set<Region> rangedInterIslandNeighbors;
 	
-	private NeighborsIterator iterator;
+	private MultiIterator<Region> iterator;
+	private boolean[] iteratedNeighborTypes;
 	
+	@SuppressWarnings("unchecked")
 	public Neighbors() {
 		directNeighbors = new HashSet<Region>(4);
 		rangedNeighbors = new HashSet<Region>(4);
 		rangedInterIslandNeighbors = new HashSet<Region>(4);
 		
-		iterator = new NeighborsIterator(directNeighbors, rangedNeighbors, rangedInterIslandNeighbors);
+		iterator = new MultiIterator<Region>(directNeighbors, rangedNeighbors, rangedInterIslandNeighbors);
+		iteratedNeighborTypes = new boolean[NeighborType.values().length];
+		
+		for (int i = 0; i < iteratedNeighborTypes.length; i++) {
+			iteratedNeighborTypes[i] = true;
+		}
 	}
 	
 	/**
@@ -73,88 +81,24 @@ public class Neighbors implements Iterable<Region> {
 
 	@Override
 	public Iterator<Region> iterator() {
-		return iterator.reset();
-	}
-	
-	public Iterator<Region> iterator(NeighborType... iterated) {
-		
-		
-		
-		return iterator.reset();
+		return iterator.reset(iteratedNeighborTypes);
 	}
 	
 	/**
-	 * Iterator to iterate over different types of neighbors.
-	 * @author josh
-	 *
+	 * Sets types of neighbors to iterate.
+	 * @param iterated
 	 */
-	// TODO abstract this...
-	public class NeighborsIterator implements Iterator<Region> {
+	public void setIteratedTypes(NeighborType... iterated) {
 		
-		private Set<Region> sets[];
-		private boolean[] iterated;
-		private int index;
-		
-		private NeighborsIterator(Set<Region>... sets) {
-			this.sets = sets;
-			
-			index = 0;
-			iterated = new boolean[sets.length];
-			
-			for (int i = 0; i < iterated.length; i++) {
-				iterated[i] = true;
-			}
+		// reset iterated types
+		for (int i = 0; i < iteratedNeighborTypes.length; i++) {
+			iteratedNeighborTypes[i] = false;
 		}
 		
-		/**
-		 * Reset the iterator instead of instantiating each time.
-		 * @return
-		 */
-		private NeighborsIterator reset(boolean... iterated) {
-			
-			for (int i = 0; i < this.iterated.length; i++) {
-				this.iterated[i] = iterated[i];
-			}
-			
-			return this;
+		// set iterated types
+		for (NeighborType neighborType : iterated) {
+			iteratedNeighborTypes[neighborType.ordinal()] = true;
 		}
-
-		@Override
-		public boolean hasNext() {
-			
-			while (index >= 0 && index < sets.length) {
-				
-				if (iterated[index] && sets[index].iterator().hasNext()) {
-					return true;
-				} else {
-					index++;
-				}
-			}
-			
-			return false;
-		}
-
-		@Override
-		public Region next() {
-			
-			while (index >= 0 && index < sets.length) {
-				Region next = iterated[index] ? sets[index].iterator().next() : null;
-				
-				if (next != null) {
-					return next;
-				} else {
-					index++;
-				}
-			}
-			
-			return null;
-		}
-
-		@Override
-		public void remove() {
-			// possible, but not needed
-			throw new UnsupportedOperationException();
-		}	
 	}
 	
 	public static void main(String[] args) {
@@ -188,6 +132,19 @@ public class Neighbors implements Iterable<Region> {
 		neighbors.add(region11, NeighborType.RANGED_INTER_ISLAND);
 		neighbors.add(region12, NeighborType.RANGED_INTER_ISLAND);
 		
+		System.out.println("All neighbors");
+		for (Region region : neighbors) {
+			System.out.println(region);
+		}
+		
+		System.out.println("Direct neighbors");
+		neighbors.setIteratedTypes(NeighborType.DIRECT);
+		for (Region region : neighbors) {
+			System.out.println(region);
+		}
+		
+		System.out.println("Ranged neighbors");
+		neighbors.setIteratedTypes(NeighborType.RANGED, NeighborType.RANGED_INTER_ISLAND);
 		for (Region region : neighbors) {
 			System.out.println(region);
 		}
