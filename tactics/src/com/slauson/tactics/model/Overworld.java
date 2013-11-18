@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.model.Neighbor.NeighborType;
-import com.slauson.tactics.model.Player.Type;
 import com.slauson.tactics.utils.Util;
 
 /**
@@ -38,23 +37,19 @@ public class Overworld {
 	
 	private int playerTurnIndex;
 	
-	public Overworld(int numPlayers) {
-		width = 8;
-		height = 6;
+	public Overworld(int width, int height, Region[][] regionsArray, List<Island> islands, List<Player> players) {
+		this.width = width;
+		this.height = height;
+		this.regionsArray = regionsArray;
+		this.islands = islands;
+		this.players = players;
 		
 		phase = Phase.ATTACK;
 		
-		players = new ArrayList<Player>(numPlayers);
-		
 		playerTurnIndex = 0;
 		
-		// player always controls first player
-		players.add(new Player(Type.PLAYER));
-		for (int i = 1; i < numPlayers; i++) {
-			players.add(new Player(Type.AI));
-		}
-		
-		testOverworld();
+		//testOverworld();
+		computeRegionList();
 		computeRegionNeighbors();
 		assignRegionPlayers();
 	}
@@ -194,6 +189,17 @@ public class Overworld {
 		islands.get(3).regions.add(regionsArray[7][2]);
 		regions.add(regionsArray[7][2]);
 		
+	}
+	
+	private void computeRegionList() {
+		regions = new ArrayList<Region>();
+		for (int column = 0; column < regionsArray.length; column++) {
+			for (int row = 0; row < regionsArray[column].length; row++) {
+				if (regionsArray[column][row] != null) {
+					regions.add(regionsArray[column][row]);
+				}
+			}
+		}
 	}
 	
 	/**

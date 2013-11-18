@@ -263,8 +263,10 @@ public class OverworldController extends Controller {
 					neighbor.region.marked = true;
 					hasAction = true;
 				}
-				// only mark direct regions owned by other players for attacks
-				else if (neighbor.type == NeighborType.DIRECT && region.unit.hasAttack && region.player != neighbor.region.player) {
+				// only mark direct regions owned by other players with units for attacks
+				else if (neighbor.type == NeighborType.DIRECT && region.unit.hasAttack &&
+						region.player != neighbor.region.player && neighbor.region.unit != null)
+				{
 					neighbor.region.marked = true;
 					hasAction = true;
 				}
@@ -284,8 +286,10 @@ public class OverworldController extends Controller {
 					neighbor.region.marked = true;
 					hasAction = true;
 				}
-				// only mark ranged regions owned by other players for attacks
-				else if (neighbor.type.isRanged() && region.unit.hasAttack && region.player != neighbor.region.player && neighbor.region.unit != null) {
+				// only mark ranged regions owned by other players with units for attacks
+				else if (neighbor.type.isRanged() && region.unit.hasAttack &&
+						region.player != neighbor.region.player && neighbor.region.unit != null)
+				{
 					neighbor.region.marked = true;
 					hasAction = true;
 				}

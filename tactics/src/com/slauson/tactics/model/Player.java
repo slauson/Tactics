@@ -7,11 +7,11 @@ public class Player {
 	public static int NUM_FREE_REINFORCEMENTS = 3;
 	public static int NUM_REINFORCEMENTS_PER_ISLAND = 1;
 	
-	public enum Type {
+	public enum PlayerType {
 		PLAYER, AI
 	}
 	
-	public Type type;
+	public PlayerType type;
 	
 	public Color color;
 	
@@ -24,7 +24,7 @@ public class Player {
 	};
 	private static int colorIndex = 0;
 	
-	public Player(Type type) {
+	public Player(PlayerType type) {
 		this.type = type;
 		
 		color = colors[colorIndex];

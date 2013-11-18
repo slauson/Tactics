@@ -3,6 +3,7 @@ package com.slauson.tactics.screen;
 import com.slauson.tactics.TacticsGame;
 import com.slauson.tactics.controller.OverworldController;
 import com.slauson.tactics.model.Overworld;
+import com.slauson.tactics.model.builder.OverworldBuilder;
 import com.slauson.tactics.view.OverworldRenderer;
 
 /**
@@ -19,7 +20,7 @@ public class OverworldScreen extends Screen {
 	public OverworldScreen(TacticsGame game) {
 		super(game);
 		
-		overworld = new Overworld(NUM_PLAYERS);
+		overworld = new OverworldBuilder(8, 8, 4, 4).build();
 	}
 	
 	@Override
