@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Island {
+	
+	public int width, height;
 
 	public List<Region> regions;
 	
-	public Island() {
-		regions = new ArrayList<Region>();
+	public Island(int width, int height) {
+		this.width = width;
+		this.height = height;
+		
+		regions = new ArrayList<Region>(width * height);
 	}
 }

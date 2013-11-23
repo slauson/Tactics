@@ -1,10 +1,15 @@
 package com.slauson.tactics.model;
 
+import com.slauson.tactics.model.builder.IslandBuilder;
 import com.slauson.tactics.utils.Util;
 
 public class IslandLayout {
 	
-	public Integer[][] islands;
+	public Boolean[][] islands;
+	public Integer[] rowEmptyRegions;
+	public Integer[] columnEmptyRegions;
+	
+	public int layoutWidth, layoutHeight;
 	
 	private int numIslands;
 
@@ -15,8 +20,6 @@ public class IslandLayout {
 	}
 	
 	private void setup() {
-		int layoutWidth, layoutHeight;
-		
 		switch (numIslands) {
 		case 1:
 			layoutWidth = 1;
@@ -67,7 +70,7 @@ public class IslandLayout {
 		}
 		
 		// assign islands to layout
-		islands = new Integer[layoutWidth][layoutHeight];
+		islands = new Boolean[layoutWidth][layoutHeight];
 		
 		int numMissingIslands = (layoutWidth * layoutHeight) - numIslands;
 		int islandNum = 0;
@@ -79,16 +82,65 @@ public class IslandLayout {
 								|| numIslands - islandNum < numMissingIslands))
 				{
 					numMissingIslands--;
-					islands[row][column] = -1;
+					islands[column][row] = false;
 				} else {
-					islands[row][column] = islandNum;
+					islands[column][row] = true;
 					islandNum++;
 				}
 			}
 		}
+		
+		// row/column empty regions
+		rowEmptyRegions = new Integer[layoutWidth];
+		columnEmptyRegions = new Integer[layoutHeight];
+		
 	}
+	
+	/*
+	public void randomize(int overworldWidth, int overworldHeight) {
+
+		// compute actual width/height taking into account space between islands
+		int overworldWidthActual = overworldWidth - islands.length + 1;
+		int overworldHeightActual = overworldHeight - islands[0].length + 1;
+		
+
+		// randomize height
+		for (int column = 0; column < islands.length; column++) {
+
+			int rowIslandHeightOffset = overworldHeightActual - (islands[column].length * IslandBuilder.MIN_HEIGHT);
+			
+			for (int row = 0; row < islands[column].length; row++) {
+				if (islands[column][row] != null) {
+					islands[column][row].offsetHeight = Util.random().nextInt(rowIslandHeightOffset + 1);
+					rowIslandHeightOffset -= islands[column][row].offsetHeight;
+				}
+			}
+			
+			// save # empty regions
+			columnEmptyRegions[column] = rowIslandHeightOffset;
+		}
+		
+		// randomize width (this assumes each column has same height)
+		for (int row = 0; row < islands[0].length; row++) {
+
+			int rowIslandWidthOffset = overworldWidthActual - (islands[0].length * IslandBuilder.MIN_WIDTH);
+			
+			for (int column = 0; column < islands.length; column++) {
+				if (islands[column][row] != null) {
+					islands[column][row].offsetWidth = Util.random().nextInt(rowIslandWidthOffset + 1);
+					rowIslandWidthOffset -= islands[column][row].offsetWidth;
+				}
+			}
+			
+			// save # empty regions
+			rowEmptyRegions[row] = rowIslandWidthOffset;
+		}
+
+	}
+	*/
 	
 	public static void main(String[] args) {
 		IslandLayout layout = new IslandLayout(3);
+		//layout.randomize(10, 10);
 	}
 }

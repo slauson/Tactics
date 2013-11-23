@@ -114,7 +114,7 @@ public class Overworld {
 		
 		islands = new ArrayList<Island>(numIslands);
 		for (int i = 0; i < numIslands; i++) {
-			islands.add(new Island());
+			islands.add(new Island(0, 0));
 		}
 		
 		regions = new ArrayList<Region>();
