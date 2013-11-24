@@ -9,6 +9,8 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Player.PlayerType;
 import com.slauson.tactics.model.Region;
+import com.slauson.tactics.model.builder.IslandBuilder.EdgeType;
+import com.slauson.tactics.utils.Util;
 
 public class OverworldBuilder {
 
@@ -44,8 +46,23 @@ public class OverworldBuilder {
 			for (int row = 0; row < islandLayout.layoutHeight; row++) {
 
 				if (islandLayout.islands[column][row]) {
+					
+					// choose random side to not connect
+					int nonConnectedSide = Util.random().nextInt(4);
+					
+					// don't use random side for edge islands
+//					if (row == 0 || row == islandLayout.layoutHeight - 1 || column == 0 || column == islandLayout.layoutWidth - 1) {
+//						nonConnectedSide = -1;
+//					}
+					
 					// construct island
-					Island island = islandBuilder.build(regionOffsetX, regionOffsetY, islandWidth, islandHeight, true, true, true, true);
+					Island island;
+					
+					island = islandBuilder.build(regionOffsetX, regionOffsetY, islandWidth, islandHeight, 
+							EdgeType.getEdgeType(nonConnectedSide == 0, row == 0),
+							EdgeType.getEdgeType(nonConnectedSide == 2, column == islandLayout.layoutWidth - 1),
+							EdgeType.getEdgeType(nonConnectedSide == 3, row == islandLayout.layoutHeight - 1),
+							EdgeType.getEdgeType(nonConnectedSide == 3, column == 0));
 					islands.add(island);
 					
 					// center region positions

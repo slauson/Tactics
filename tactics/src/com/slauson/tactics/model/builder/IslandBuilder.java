@@ -7,6 +7,20 @@ import com.slauson.tactics.utils.Util;
 
 public class IslandBuilder {
 	
+	public enum EdgeType {
+		DISCONNECTED, CONNECTED, RANDOM;
+		
+		static EdgeType getEdgeType(boolean disconnected, boolean random) {
+			if (disconnected) {
+				return DISCONNECTED;
+			} else if (random) {
+				return RANDOM;
+			} else {
+				return CONNECTED;
+			}
+		}
+	}
+	
 	public static final int MIN_WIDTH = 2;
 	public static final int MIN_HEIGHT = 2;
 
@@ -24,34 +38,67 @@ public class IslandBuilder {
 		this.regionsArray = regionsArray;
 	}
 	
-	public Island build(int regionOffsetX, int regionOffsetY, int maxIslandWidth, int maxIslandHeight, boolean connectNorth, boolean connectEast, boolean connectSouth, boolean connectWest) {
+	public Island build(int regionOffsetX, int regionOffsetY, int maxIslandWidth, int maxIslandHeight, EdgeType edgeNorth, EdgeType edgeEast, EdgeType edgeSouth, EdgeType edgeWest) {
 		
 		int islandRegionOffsetStartX = -1, islandRegionOffsetStartY = -1;
 		int islandRegionOffsetEndX = -1, islandRegionOffsetEndY = -1;
 		
-		if (connectNorth) {
+		switch (edgeNorth) {
+		case CONNECTED:
 			islandRegionOffsetStartY = regionOffsetY;
-		} else {
-			islandRegionOffsetStartY = regionOffsetY + 1 + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT);
+			break;
+		case DISCONNECTED:
+			if (edgeSouth == EdgeType.DISCONNECTED) {
+				islandRegionOffsetStartY = regionOffsetY + 1 + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT - 1);
+			} else {
+				islandRegionOffsetStartY = regionOffsetY + 1 + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT);
+			}
+			break;
+		case RANDOM:
+			islandRegionOffsetStartY = regionOffsetY + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT + 1);
+			break;
 		}
 		
-		if (connectWest) {
+		switch (edgeWest) {
+		case CONNECTED:
 			islandRegionOffsetStartX = regionOffsetX;
-		} else {
-			islandRegionOffsetStartX = regionOffsetX + 1 + Util.random().nextInt(maxIslandWidth - MIN_WIDTH);
+			break;
+		case DISCONNECTED:
+			if (edgeEast == EdgeType.DISCONNECTED) {
+				islandRegionOffsetStartX = regionOffsetX + 1 + Util.random().nextInt(maxIslandWidth - MIN_WIDTH - 1);
+			} else {
+				islandRegionOffsetStartX = regionOffsetX + 1 + Util.random().nextInt(maxIslandWidth - MIN_WIDTH);
+			}
+			break;
+		case RANDOM:
+			islandRegionOffsetStartX = regionOffsetX + Util.random().nextInt(maxIslandWidth - MIN_WIDTH + 1);
+			break;
 		}
 		
-		if (connectSouth) {
+		System.out.println(String.format("island build: %d,%d - %d,%d - %s,%s,%s,%s - %d,%d", regionOffsetX, regionOffsetY, maxIslandWidth, maxIslandHeight, edgeNorth, edgeEast, edgeSouth, edgeWest, islandRegionOffsetStartX, islandRegionOffsetStartY));
+
+		switch (edgeSouth) {
+		case CONNECTED:
 			islandRegionOffsetEndY = regionOffsetY + maxIslandHeight - 1;
-		} else {
-			islandRegionOffsetEndY = islandRegionOffsetStartY + MIN_HEIGHT + Util.random().nextInt((regionOffsetY + maxIslandHeight) - islandRegionOffsetStartY - MIN_HEIGHT);
+			break;
+		case DISCONNECTED:
+			islandRegionOffsetEndY = islandRegionOffsetStartY + MIN_HEIGHT - 1 + Util.random().nextInt((regionOffsetY + maxIslandHeight - 2) - (islandRegionOffsetStartY + MIN_HEIGHT - 1) + 1);
+			break;
+		case RANDOM:
+			islandRegionOffsetEndY = islandRegionOffsetStartY + MIN_HEIGHT - 1 + Util.random().nextInt((regionOffsetY + maxIslandHeight - 1) - (islandRegionOffsetStartY + MIN_HEIGHT - 1) + 1);
+			break;
 		}
-		
-		if (connectEast) {
+
+		switch (edgeEast) {
+		case CONNECTED:
 			islandRegionOffsetEndX = regionOffsetX + maxIslandWidth - 1;
-		}
-		else {
-			islandRegionOffsetEndX = islandRegionOffsetStartX + MIN_HEIGHT + Util.random().nextInt((regionOffsetX + maxIslandWidth) - islandRegionOffsetStartX - MIN_WIDTH);
+			break;
+		case DISCONNECTED:
+			islandRegionOffsetEndX = islandRegionOffsetStartX + MIN_WIDTH - 1 + Util.random().nextInt((regionOffsetX + maxIslandWidth - 2) - (islandRegionOffsetStartX + MIN_WIDTH - 1) + 1);
+			break;
+		case RANDOM:
+			islandRegionOffsetEndX = islandRegionOffsetStartX + MIN_WIDTH - 1 + Util.random().nextInt((regionOffsetX + maxIslandWidth - 1) - (islandRegionOffsetStartX + MIN_WIDTH - 1) + 1);
+			break;
 		}
 		
 		Island island = new Island(islandRegionOffsetEndX - islandRegionOffsetStartX + 1, islandRegionOffsetEndY - islandRegionOffsetStartY + 1);
