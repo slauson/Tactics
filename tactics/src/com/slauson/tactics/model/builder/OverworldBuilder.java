@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.IslandLayout;
+import com.slauson.tactics.model.IslandLayout.Direction;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Player.PlayerType;
@@ -44,11 +45,23 @@ public class OverworldBuilder {
 		for (int column = 0; column < islandLayout.layoutWidth; column++) {
 			
 			for (int row = 0; row < islandLayout.layoutHeight; row++) {
-
-				if (islandLayout.islands[column][row]) {
+				
+				if (islandLayout.islands[column][row] != null) {
+					
+					System.out.println("island layout: " + islandLayout.islands[column][row]);
 					
 					// choose random side to not connect
-					int nonConnectedSide = Util.random().nextInt(4);
+					Direction nonConnectedSide = Direction.values()[Util.random().nextInt(Direction.values().length)];
+
+					// if island contains force edges for each side, don't use a non connected side
+					if (islandLayout.islands[column][row].forceEdges.size() == Direction.values().length) {
+						nonConnectedSide = null;
+					} else {
+						// obey force edges
+						while (islandLayout.islands[column][row].forceEdges.contains(nonConnectedSide)) {
+							nonConnectedSide = nonConnectedSide.next();
+						}
+					}
 					
 					// don't use random side for edge islands
 //					if (row == 0 || row == islandLayout.layoutHeight - 1 || column == 0 || column == islandLayout.layoutWidth - 1) {
@@ -59,10 +72,10 @@ public class OverworldBuilder {
 					Island island;
 					
 					island = islandBuilder.build(regionOffsetX, regionOffsetY, islandWidth, islandHeight, 
-							EdgeType.getEdgeType(nonConnectedSide == 0, row == 0),
-							EdgeType.getEdgeType(nonConnectedSide == 2, column == islandLayout.layoutWidth - 1),
-							EdgeType.getEdgeType(nonConnectedSide == 3, row == islandLayout.layoutHeight - 1),
-							EdgeType.getEdgeType(nonConnectedSide == 3, column == 0));
+							EdgeType.getEdgeType(nonConnectedSide == Direction.NORTH, row == 0),
+							EdgeType.getEdgeType(nonConnectedSide == Direction.EAST, column == islandLayout.layoutWidth - 1),
+							EdgeType.getEdgeType(nonConnectedSide == Direction.SOUTH, row == islandLayout.layoutHeight - 1),
+							EdgeType.getEdgeType(nonConnectedSide == Direction.WEST, column == 0));
 					islands.add(island);
 					
 					// center region positions

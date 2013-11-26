@@ -1,13 +1,70 @@
 package com.slauson.tactics.model;
 
-import com.slauson.tactics.model.builder.IslandBuilder;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.slauson.tactics.utils.Util;
 
 public class IslandLayout {
 	
-	public Boolean[][] islands;
-	public Integer[] rowEmptyRegions;
-	public Integer[] columnEmptyRegions;
+	public class BuildIsland {
+		public int islandNum;
+		public int row, column;
+		public List<Direction> forceEdges;
+		
+		public BuildIsland(int islandNum, int column, int row) {
+			this.islandNum = islandNum;
+			this.column = column;
+			this.row = row;
+			forceEdges = new ArrayList<Direction>(4);
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			for (Direction direction : forceEdges) {
+				if (builder.length() > 0) {
+					builder.append(',');
+				}
+				builder.append(direction.name());
+			}
+			return String.format("%d, %d - %s", column, row, builder.toString());
+		}
+	}
+	
+	public enum Direction {
+		NORTH, EAST, SOUTH, WEST;
+		
+		public Direction next() {
+			switch (this) {
+			case NORTH:
+				return EAST;
+			case EAST:
+				return SOUTH;
+			case SOUTH:
+				return WEST;
+			case WEST:
+			default:
+				return NORTH;
+			}
+		}
+		
+		public Direction opposite() {
+			switch (this) {
+			case NORTH:
+				return SOUTH;
+			case EAST:
+				return WEST;
+			case SOUTH:
+				return NORTH;
+			case WEST:
+			default:
+				return EAST;
+			}
+		}
+	}
+	
+	public BuildIsland[][] islands;
 	
 	public int layoutWidth, layoutHeight;
 	
@@ -70,7 +127,7 @@ public class IslandLayout {
 		}
 		
 		// assign islands to layout
-		islands = new Boolean[layoutWidth][layoutHeight];
+		islands = new BuildIsland[layoutWidth][layoutHeight];
 		
 		int numMissingIslands = (layoutWidth * layoutHeight) - numIslands;
 		int islandNum = 0;
@@ -82,18 +139,87 @@ public class IslandLayout {
 								|| numIslands - islandNum < numMissingIslands))
 				{
 					numMissingIslands--;
-					islands[column][row] = false;
+					islands[column][row] = null;
 				} else {
-					islands[column][row] = true;
+					islands[column][row] = new BuildIsland(islandNum, column, row);
 					islandNum++;
 				}
 			}
 		}
 		
-		// row/column empty regions
-		rowEmptyRegions = new Integer[layoutWidth];
-		columnEmptyRegions = new Integer[layoutHeight];
+		forceEdgeTraversal();
+	}
+	
+	/**
+	 * Constructs force edges throughout island layout
+	 * making each island connected.
+	 */
+	private void forceEdgeTraversal() {
+		// dfs search list
+		List<BuildIsland> traversedIslands = new ArrayList<BuildIsland>(numIslands);
 		
+		// choose random island to start with
+		int column = Util.random().nextInt(layoutWidth);
+		int row = Util.random().nextInt(layoutHeight);
+		
+		traversedIslands.add(islands[column][row]);
+		
+		while (traversedIslands.size() > 0) {
+			
+			// current island
+			BuildIsland island = traversedIslands.get(traversedIslands.size() - 1);
+						
+			// choose random neighbor
+			Direction randomNeighborDirection = Direction.values()[Util.random().nextInt(Direction.values().length)];
+			int numNeighborsChecked = 0;
+			
+			do {
+			
+				int randomNeighborColumn = island.column;
+				int randomNeighborRow = island.row;
+				
+				switch (randomNeighborDirection) {
+				case NORTH:
+					randomNeighborRow--;
+					break;
+				case EAST:
+					randomNeighborColumn++;
+					break;
+				case SOUTH:
+					randomNeighborRow++;
+					break;
+				case WEST:
+					randomNeighborColumn--;
+					break;
+				}
+				
+				// find neighbor that isn't already connected
+				if (randomNeighborColumn >= 0 && randomNeighborColumn < layoutWidth && randomNeighborRow >= 0 && randomNeighborRow < layoutHeight &&
+						!island.forceEdges.contains(randomNeighborDirection) &&
+						islands[randomNeighborColumn][randomNeighborRow] != null && islands[randomNeighborColumn][randomNeighborRow].forceEdges.size() == 0)
+				{
+					// force edge
+					island.forceEdges.add(randomNeighborDirection);
+					islands[randomNeighborColumn][randomNeighborRow].forceEdges.add(randomNeighborDirection.opposite());
+					
+					// add island to list of traversed islands
+					traversedIslands.add(islands[randomNeighborColumn][randomNeighborRow]);
+					
+					// traverse to new island
+					break;
+				}
+				
+				// try next neighbor
+				randomNeighborDirection = randomNeighborDirection.next();
+				numNeighborsChecked++;
+				
+			} while (numNeighborsChecked < Direction.values().length);
+			
+			// finish traversing island if we didn't add something new
+			if (numNeighborsChecked == Direction.values().length) {
+				traversedIslands.remove(traversedIslands.size() - 1);
+			}
+		}
 	}
 	
 	/*

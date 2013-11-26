@@ -38,6 +38,7 @@ public class IslandBuilder {
 		this.regionsArray = regionsArray;
 	}
 	
+	// TODO this fails for 5x5 overworld with 4 islands
 	public Island build(int regionOffsetX, int regionOffsetY, int maxIslandWidth, int maxIslandHeight, EdgeType edgeNorth, EdgeType edgeEast, EdgeType edgeSouth, EdgeType edgeWest) {
 		
 		int islandRegionOffsetStartX = -1, islandRegionOffsetStartY = -1;

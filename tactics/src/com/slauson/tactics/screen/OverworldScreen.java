@@ -20,7 +20,7 @@ public class OverworldScreen extends Screen {
 	public OverworldScreen(TacticsGame game) {
 		super(game);
 		
-		overworld = new OverworldBuilder(9, 7, 4, 4).build();
+		overworld = new OverworldBuilder(19, 19, NUM_PLAYERS, 16).build();
 	}
 	
 	@Override
