@@ -21,9 +21,6 @@ public class IslandBuilder {
 		}
 	}
 	
-	public static final int MIN_WIDTH = 2;
-	public static final int MIN_HEIGHT = 2;
-
 	private Region[][] regionsArray;
 	
 	// size offsets, assuming MIN_WIDTH/MIN_HEIGHT
@@ -38,70 +35,78 @@ public class IslandBuilder {
 		this.regionsArray = regionsArray;
 	}
 	
-	// TODO this fails for 5x5 overworld with 4 islands
 	public Island build(int regionOffsetX, int regionOffsetY, int maxIslandWidth, int maxIslandHeight, EdgeType edgeNorth, EdgeType edgeEast, EdgeType edgeSouth, EdgeType edgeWest) {
 		
-		int islandRegionOffsetStartX = -1, islandRegionOffsetStartY = -1;
-		int islandRegionOffsetEndX = -1, islandRegionOffsetEndY = -1;
+		int islandRegionOffsetStartY = regionOffsetY;
+		int islandRegionOffsetStartX = regionOffsetX;
+		int islandRegionOffsetEndY = regionOffsetY + maxIslandHeight - 1;
+		int islandRegionOffsetEndX = regionOffsetX + maxIslandWidth - 1;
+		
+		// set min width/height
+		// for connected edges, need to have width/height greater than half
+		int minIslandWidth = (edgeNorth == EdgeType.CONNECTED || edgeSouth == EdgeType.CONNECTED) ? maxIslandWidth/2 + 1 : 1;
+		int minIslandHeight = (edgeWest == EdgeType.CONNECTED || edgeEast == EdgeType.CONNECTED) ? maxIslandHeight/2 + 1 : 1;
+		
+		// first, adjust offsets/width/height
+		if (edgeNorth == EdgeType.DISCONNECTED && (islandRegionOffsetEndY - islandRegionOffsetStartY + 1) > minIslandHeight) {
+			islandRegionOffsetStartY++;
+		}
+		if (edgeWest == EdgeType.DISCONNECTED && (islandRegionOffsetEndX - islandRegionOffsetStartX + 1) > minIslandWidth) {
+			islandRegionOffsetStartX++;
+		}
+		if (edgeSouth == EdgeType.DISCONNECTED && (islandRegionOffsetEndY - islandRegionOffsetStartY + 1) > minIslandHeight) {
+			islandRegionOffsetEndY--;
+		}
+		if (edgeWest == EdgeType.DISCONNECTED && (islandRegionOffsetEndX - islandRegionOffsetStartX + 1) > minIslandWidth) {
+			islandRegionOffsetEndX--;
+		}
+		
+		System.out.println(String.format("island build 1: %d,%d - %d,%d - %s,%s,%s,%s - %d,%d - %d,%d - %d, %d", regionOffsetX, regionOffsetY, maxIslandWidth, maxIslandHeight, edgeNorth, edgeEast, edgeSouth, edgeWest, islandRegionOffsetStartX, islandRegionOffsetStartY, islandRegionOffsetEndX, islandRegionOffsetEndY, minIslandWidth, minIslandHeight));
 		
 		switch (edgeNorth) {
 		case CONNECTED:
-			islandRegionOffsetStartY = regionOffsetY;
+			// do nothing
 			break;
 		case DISCONNECTED:
-			if (edgeSouth == EdgeType.DISCONNECTED) {
-				islandRegionOffsetStartY = regionOffsetY + 1 + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT - 1);
-			} else {
-				islandRegionOffsetStartY = regionOffsetY + 1 + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT);
-			}
-			break;
 		case RANDOM:
-			islandRegionOffsetStartY = regionOffsetY + Util.random().nextInt(maxIslandHeight - MIN_HEIGHT + 1);
+			islandRegionOffsetStartY += Util.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
 			break;
 		}
 		
 		switch (edgeWest) {
 		case CONNECTED:
-			islandRegionOffsetStartX = regionOffsetX;
+			// do nothing
 			break;
 		case DISCONNECTED:
-			if (edgeEast == EdgeType.DISCONNECTED) {
-				islandRegionOffsetStartX = regionOffsetX + 1 + Util.random().nextInt(maxIslandWidth - MIN_WIDTH - 1);
-			} else {
-				islandRegionOffsetStartX = regionOffsetX + 1 + Util.random().nextInt(maxIslandWidth - MIN_WIDTH);
-			}
-			break;
 		case RANDOM:
-			islandRegionOffsetStartX = regionOffsetX + Util.random().nextInt(maxIslandWidth - MIN_WIDTH + 1);
+			islandRegionOffsetStartX += Util.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
 			break;
 		}
 		
-		System.out.println(String.format("island build: %d,%d - %d,%d - %s,%s,%s,%s - %d,%d", regionOffsetX, regionOffsetY, maxIslandWidth, maxIslandHeight, edgeNorth, edgeEast, edgeSouth, edgeWest, islandRegionOffsetStartX, islandRegionOffsetStartY));
-
+		System.out.println(String.format("island build 2: %d,%d - %d,%d - %s,%s,%s,%s - %d,%d - %d,%d - %d, %d", regionOffsetX, regionOffsetY, maxIslandWidth, maxIslandHeight, edgeNorth, edgeEast, edgeSouth, edgeWest, islandRegionOffsetStartX, islandRegionOffsetStartY, islandRegionOffsetEndX, islandRegionOffsetEndY, minIslandWidth, minIslandHeight));
+		
 		switch (edgeSouth) {
 		case CONNECTED:
-			islandRegionOffsetEndY = regionOffsetY + maxIslandHeight - 1;
+			// do nothing
 			break;
 		case DISCONNECTED:
-			islandRegionOffsetEndY = islandRegionOffsetStartY + MIN_HEIGHT - 1 + Util.random().nextInt((regionOffsetY + maxIslandHeight - 2) - (islandRegionOffsetStartY + MIN_HEIGHT - 1) + 1);
-			break;
 		case RANDOM:
-			islandRegionOffsetEndY = islandRegionOffsetStartY + MIN_HEIGHT - 1 + Util.random().nextInt((regionOffsetY + maxIslandHeight - 1) - (islandRegionOffsetStartY + MIN_HEIGHT - 1) + 1);
-			break;
-		}
-
-		switch (edgeEast) {
-		case CONNECTED:
-			islandRegionOffsetEndX = regionOffsetX + maxIslandWidth - 1;
-			break;
-		case DISCONNECTED:
-			islandRegionOffsetEndX = islandRegionOffsetStartX + MIN_WIDTH - 1 + Util.random().nextInt((regionOffsetX + maxIslandWidth - 2) - (islandRegionOffsetStartX + MIN_WIDTH - 1) + 1);
-			break;
-		case RANDOM:
-			islandRegionOffsetEndX = islandRegionOffsetStartX + MIN_WIDTH - 1 + Util.random().nextInt((regionOffsetX + maxIslandWidth - 1) - (islandRegionOffsetStartX + MIN_WIDTH - 1) + 1);
+			islandRegionOffsetEndY -= Util.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
 			break;
 		}
 		
+		switch (edgeEast) {
+		case CONNECTED:
+			// do nothing
+			break;
+		case DISCONNECTED:
+		case RANDOM:
+			islandRegionOffsetEndX -= Util.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
+			break;
+		}
+		
+		System.out.println(String.format("island build 3: %d,%d - %d,%d - %s,%s,%s,%s - %d,%d - %d,%d - %d, %d", regionOffsetX, regionOffsetY, maxIslandWidth, maxIslandHeight, edgeNorth, edgeEast, edgeSouth, edgeWest, islandRegionOffsetStartX, islandRegionOffsetStartY, islandRegionOffsetEndX, islandRegionOffsetEndY, minIslandWidth, minIslandHeight));
+
 		Island island = new Island(islandRegionOffsetEndX - islandRegionOffsetStartX + 1, islandRegionOffsetEndY - islandRegionOffsetStartY + 1);
 		
 		// construct regions
@@ -114,6 +119,8 @@ public class IslandBuilder {
 		
 		return island;
 	}
+	
+	private static int MIN_WIDTH = 2, MIN_HEIGHT = 2;
 	
 	public Island buildVersion2(Region[][] regionsArray, int regionOffsetX, int regionOffsetY) {
 		
