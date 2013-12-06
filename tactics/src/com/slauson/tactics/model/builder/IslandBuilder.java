@@ -3,7 +3,7 @@ package com.slauson.tactics.model.builder;
 import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Region;
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.Utils;
 
 public class IslandBuilder {
 	
@@ -69,7 +69,7 @@ public class IslandBuilder {
 			break;
 		case DISCONNECTED:
 		case RANDOM:
-			islandRegionOffsetStartY += Util.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
+			islandRegionOffsetStartY += Utils.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
 			break;
 		}
 		
@@ -79,7 +79,7 @@ public class IslandBuilder {
 			break;
 		case DISCONNECTED:
 		case RANDOM:
-			islandRegionOffsetStartX += Util.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
+			islandRegionOffsetStartX += Utils.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
 			break;
 		}
 		
@@ -91,7 +91,7 @@ public class IslandBuilder {
 			break;
 		case DISCONNECTED:
 		case RANDOM:
-			islandRegionOffsetEndY -= Util.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
+			islandRegionOffsetEndY -= Utils.random().nextInt(islandRegionOffsetEndY - islandRegionOffsetStartY + 1 - minIslandHeight + 1);
 			break;
 		}
 		
@@ -101,7 +101,7 @@ public class IslandBuilder {
 			break;
 		case DISCONNECTED:
 		case RANDOM:
-			islandRegionOffsetEndX -= Util.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
+			islandRegionOffsetEndX -= Utils.random().nextInt(islandRegionOffsetEndX - islandRegionOffsetStartX + 1 - minIslandWidth + 1);
 			break;
 		}
 		

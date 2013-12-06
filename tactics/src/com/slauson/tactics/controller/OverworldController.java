@@ -1,15 +1,14 @@
 package com.slauson.tactics.controller;
 
-import com.slauson.tactics.model.Island;
-import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Neighbor.NeighborType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
-import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 import com.slauson.tactics.model.Unit.UnitType;
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.BattleUtils;
+import com.slauson.tactics.utils.PlayerUtils;
+import com.slauson.tactics.utils.RegionUtils;
 
 /**
  * Controls the overworld.
@@ -53,7 +52,7 @@ public class OverworldController extends Controller {
 					selectedRegion.selected = false;
 					
 					// unmark previously selected region neighbors
-					unmarkRegionNeighbors(selectedRegion);
+					RegionUtils.unmarkRegionNeighbors(selectedRegion);
 					
 					// if selected again, just unselect
 					if (selectedRegion == region) {
@@ -69,14 +68,14 @@ public class OverworldController extends Controller {
 						if (selectedRegion.unit.hasAttack && selectedRegion.player != region.player && region.unit != null &&
 								((selectedRegion.unit.type.isRanged() && neighborType.isRanged()) || (!selectedRegion.unit.type.isRanged() && !neighborType.isRanged())))
 						{
-							Region updatedAttackingRegion = handleBattleSingleAttack(selectedRegion, region);
+							Region updatedAttackingRegion = BattleUtils.handleBattle(selectedRegion, region);
 							
 							// keep region selected if attacker won battle and can still move
 							if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
 								selectedRegion = updatedAttackingRegion;
 								selectedRegion.selected = true;
 								
-								markRegionNeighbors(selectedRegion);
+								RegionUtils.markRegionNeighbors(selectedRegion);
 							} else {
 								selectedRegion = null;
 							}
@@ -100,7 +99,7 @@ public class OverworldController extends Controller {
 								selectedRegion = region;
 								selectedRegion.selected = true;
 							
-								markRegionNeighbors(selectedRegion);
+								RegionUtils.markRegionNeighbors(selectedRegion);
 							} else {
 								selectedRegion = null;
 							}
@@ -120,7 +119,7 @@ public class OverworldController extends Controller {
 								selectedRegion = region;
 								selectedRegion.selected = true;
 							
-								markRegionNeighbors(selectedRegion);
+								RegionUtils.markRegionNeighbors(selectedRegion);
 							} else {
 								selectedRegion = null;
 							}
@@ -142,7 +141,7 @@ public class OverworldController extends Controller {
 					
 					System.out.println("selected: " + selectedRegion);
 					
-					markRegionNeighbors(selectedRegion);
+					RegionUtils.markRegionNeighbors(selectedRegion);
 				}
 				break;
 			case REINFORCE:
@@ -199,7 +198,7 @@ public class OverworldController extends Controller {
 		case ' ':
 			// unmark previously selected region
 			if (selectedRegion != null) {
-				unmarkRegionNeighbors(selectedRegion);
+				RegionUtils.unmarkRegionNeighbors(selectedRegion);
 				selectedRegion.selected = false;
 				selectedRegion = null;
 			}
@@ -209,16 +208,16 @@ public class OverworldController extends Controller {
 			
 			if (overworld.phase == Phase.ATTACK) {
 				
-				unmarkAllRegions();
+				RegionUtils.unmarkAllRegions(overworld);
 				
 				// move to next turn
 				overworld.nextTurn();
 				
-				setPlayerUnitsActive(overworld.activePlayer());
+				PlayerUtils.setPlayerUnitsActive(overworld, overworld.activePlayer());
 			} else {
 				// handle reinforcements
-				updatePlayerReinforcements(overworld.activePlayer());
-				markPlayerReinforcements(overworld.activePlayer());
+				PlayerUtils.updatePlayerReinforcements(overworld, overworld.activePlayer());
+				PlayerUtils.markPlayerReinforcements(overworld, overworld.activePlayer());
 			}
 			
 			return true;
@@ -226,280 +225,4 @@ public class OverworldController extends Controller {
 		
 		return false;
 	}
-
-	/**
-	 * Sets all player units as active.
-	 * @param player
-	 */
-	private void setPlayerUnitsActive(Player player) {
-		for (Region region : overworld.regions) {
-			if (region.unit != null && region.player == player) {
-				region.unit.hasAttack = true;
-				region.unit.hasMove = true;
-			}
-		}
-	}
-	
-	/**
-	 * Marks neighboring regions depending on available actions for unit at given region.
-	 * @param region
-	 * @return true if unit has action
-	 */
-	private boolean markRegionNeighbors(Region region) {
-		
-		boolean hasAction = false;
-		
-		switch (region.unit.type) {
-		case CIRCLE:
-		case SQUARE:
-		case TRIANGLE:
-			// mark region neighbors
-			for (Neighbor neighbor : region.neighbors) {
-				// mark unoccupied direct or ranged inter island regions
-				// or occupied regions owned by same player for moves
-				if (neighbor.type.isMovable() && region.unit.hasMove && 
-						(neighbor.region.unit == null || (region.player == neighbor.region.player && neighbor.region.unit.hasMove)))
-				{
-					neighbor.region.marked = true;
-					hasAction = true;
-				}
-				// only mark direct regions owned by other players with units for attacks
-				else if (neighbor.type == NeighborType.DIRECT && region.unit.hasAttack &&
-						region.player != neighbor.region.player && neighbor.region.unit != null)
-				{
-					neighbor.region.marked = true;
-					hasAction = true;
-				}
-				
-			}
-			break;
-		case RANGED_CIRCLE:
-		case RANGED_SQUARE:
-		case RANGED_TRIANGLE:
-			// mark region neighbors
-			for (Neighbor neighbor : region.neighbors) {
-				// mark unoccupied direct or ranged inter island regions
-				// or occupied regions owned by same player for moves
-				if (neighbor.type.isMovable() && region.unit.hasMove && 
-						(neighbor.region.unit == null || (region.player == neighbor.region.player && neighbor.region.unit.hasMove)))
-				{
-					neighbor.region.marked = true;
-					hasAction = true;
-				}
-				// only mark ranged regions owned by other players with units for attacks
-				else if (neighbor.type.isRanged() && region.unit.hasAttack &&
-						region.player != neighbor.region.player && neighbor.region.unit != null)
-				{
-					neighbor.region.marked = true;
-					hasAction = true;
-				}
-			}
-			break;
-		}
-		
-		return hasAction;
-	}
-	
-	/**
-	 * Unmarks all neighboring regions for given region.
-	 * @param region
-	 */
-	private void unmarkRegionNeighbors(Region region) {
-		for (Neighbor neighbor : region.neighbors) {
-			neighbor.region.marked = false;
-		}
-	}
-	
-	/**
-	 * Unmarks all player regions.
-	 * @param player
-	 */
-	private void unmarkAllRegions() {
-		for (Region region : overworld.regions) {
-			region.marked = false;
-		}
-	}
-	
-	/**
-	 * Marks regions for player reinforcements.
-	 * @param player
-	 */
-	private void markPlayerReinforcements(Player player) {
-		for (Region region : overworld.regions) {
-			if (region.player != player || (region.unit != null && region.unit.health == Unit.MAX_HEALTH)) {
-				region.marked = true;
-			}
-		}
-	}
-	
-	/**
-	 * Updates reinforcements for given player.
-	 * @param player
-	 */
-	private void updatePlayerReinforcements(Player player) {
-		
-		int newReinforcements = 0;
-		
-		for (Island island : overworld.islands) {
-			
-			boolean playerOwnsIsland = true;
-			
-			for (int i = 0; i < island.regions.size() && playerOwnsIsland; i++) {
-				playerOwnsIsland &= (island.regions.get(i).player == player);
-			}
-			
-			if (playerOwnsIsland) {
-				newReinforcements++;
-			}
-		}
-		
-		player.reinforcements += newReinforcements;
-	}
-	
-	/**
-	 * Handles battle between two regions.
-	 * @param attackingRegion
-	 * @param defendingRegion
-	 * @return attacker's updated region
-	 */
-	private Region handleBattleSingleAttack(Region attackingRegion, Region defendingRegion) {
-		
-		System.out.println("battle (" + attackingRegion + ") vs (" + defendingRegion + ")");
-		
-		// only allow a single attack
-		attackingRegion.unit.hasAttack = false;
-		
-		// calculate attack factor for attacking region 
-		float attackFactor = 1f;
-
-		switch (attackingRegion.unit.type) {
-		case CIRCLE:
-		case RANGED_CIRCLE:
-			switch (defendingRegion.unit.type) {
-			case CIRCLE:
-			case RANGED_CIRCLE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case SQUARE:
-			case RANGED_SQUARE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case TRIANGLE:
-			case RANGED_TRIANGLE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			}
-			break;
-		case SQUARE:
-		case RANGED_SQUARE:
-			switch (defendingRegion.unit.type) {
-			case CIRCLE:
-			case RANGED_CIRCLE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case SQUARE:
-			case RANGED_SQUARE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case TRIANGLE:
-			case RANGED_TRIANGLE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			}
-			break;
-		case TRIANGLE:
-		case RANGED_TRIANGLE:
-			switch (defendingRegion.unit.type) {
-			case CIRCLE:
-			case RANGED_CIRCLE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case SQUARE:
-			case RANGED_SQUARE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			case TRIANGLE:
-			case RANGED_TRIANGLE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Util.random().nextFloat();
-				break;
-			}
-			break;
-		}
-		
-		float defendFactor = 2 - attackFactor;
-
-		// calculate how much damage each region can do
-		float attackerAttackDamage = attackFactor * attackingRegion.unit.health;
-		float defenderAttackDamage = defendFactor * defendingRegion.unit.health;
-		
-		// special case for ranged units
-		if ((attackingRegion.unit.type.isRanged() && !defendingRegion.unit.type.isRanged()) ||
-				defendingRegion.unit.type.isRanged() && !attackingRegion.unit.type.isRanged())
-		{
-			defenderAttackDamage = Float.MIN_VALUE; // use min value instead of 0 to allow division below
-		}
-		
-		// update health
-		attackingRegion.unit.health -= defenderAttackDamage;
-		defendingRegion.unit.health -= attackerAttackDamage;
-		
-		System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
-		
-		// special case of both units defeated
-		if (defendingRegion.unit.health <= 0 && attackingRegion.unit.health <= 0) {
-
-			// this is unlikely
-			
-			// determine percentage of attack that went wasted
-			float attackerOverkillFactor = -attackingRegion.unit.health / defenderAttackDamage;
-			float defenderOverkillFactor = -defendingRegion.unit.health / attackerAttackDamage;
-			
-			// defender defeated first
-			if (defenderOverkillFactor >= attackerOverkillFactor) {
-				// update attacker health
-				attackingRegion.unit.health += (defenderOverkillFactor * defenderAttackDamage);
-			}
-			// attacker defeated first
-			else {
-				// update defender health
-				defendingRegion.unit.health += (attackerOverkillFactor * attackerAttackDamage);
-			}
-		}
-		
-		// attacker victory
-		if (defendingRegion.unit.health <= 0) {
-
-			attackingRegion.player.regions++;
-			defendingRegion.player.regions--;
-			defendingRegion.player.units--;
-			
-			// normal attacking unit
-			if (!attackingRegion.unit.type.isRanged()) {
-				defendingRegion.player = attackingRegion.player;
-				defendingRegion.unit = attackingRegion.unit;
-				attackingRegion.unit = null;
-				
-				return defendingRegion;
-			}
-			// ranged attacking unit
-			else {
-				defendingRegion.unit = null;
-				return null;
-			}
-		}
-		// defender victory
-		else if (attackingRegion.unit.health <= 0) {
-			// remove unit from attacking region
-			attackingRegion.unit = null;
-			
-			attackingRegion.player.units--;
-			
-			return null;
-		}
-		// no victory
-		else {
-			// do nothing
-			return null;
-		}
-	}		
 }

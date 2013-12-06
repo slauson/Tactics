@@ -3,7 +3,7 @@ package com.slauson.tactics.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.Utils;
 
 public class IslandLayout {
 	
@@ -120,7 +120,7 @@ public class IslandLayout {
 		}
 		
 		// randomly swap width/height
-		if (Util.random().nextBoolean()) {
+		if (Utils.random().nextBoolean()) {
 			int temp = layoutWidth;
 			layoutWidth = layoutHeight;
 			layoutHeight = temp;
@@ -135,7 +135,7 @@ public class IslandLayout {
 		for (int column = 0; column < islands.length; column++) {
 			for (int row = 0; row < islands[column].length; row++) {
 				if (numMissingIslands > 0
-						&& (Util.random().nextFloat() > (100f * numMissingIslands / numIslands)
+						&& (Utils.random().nextFloat() > (100f * numMissingIslands / numIslands)
 								|| numIslands - islandNum < numMissingIslands))
 				{
 					numMissingIslands--;
@@ -159,8 +159,8 @@ public class IslandLayout {
 		List<BuildIsland> traversedIslands = new ArrayList<BuildIsland>(numIslands);
 		
 		// choose random island to start with
-		int column = Util.random().nextInt(layoutWidth);
-		int row = Util.random().nextInt(layoutHeight);
+		int column = Utils.random().nextInt(layoutWidth);
+		int row = Utils.random().nextInt(layoutHeight);
 		
 		traversedIslands.add(islands[column][row]);
 		
@@ -170,7 +170,7 @@ public class IslandLayout {
 			BuildIsland island = traversedIslands.get(traversedIslands.size() - 1);
 						
 			// choose random neighbor
-			Direction randomNeighborDirection = Direction.values()[Util.random().nextInt(Direction.values().length)];
+			Direction randomNeighborDirection = Direction.values()[Utils.random().nextInt(Direction.values().length)];
 			int numNeighborsChecked = 0;
 			
 			do {

@@ -11,7 +11,7 @@ import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Player.PlayerType;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.builder.IslandBuilder.EdgeType;
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.Utils;
 
 public class OverworldBuilder {
 
@@ -51,7 +51,7 @@ public class OverworldBuilder {
 					System.out.println("island layout: " + islandLayout.islands[column][row]);
 					
 					// choose random side to not connect
-					Direction nonConnectedSide = Direction.values()[Util.random().nextInt(Direction.values().length)];
+					Direction nonConnectedSide = Direction.values()[Utils.random().nextInt(Direction.values().length)];
 
 					// if island contains force edges for each side, don't use a non connected side
 					if (islandLayout.islands[column][row].forceEdges.size() == Direction.values().length) {

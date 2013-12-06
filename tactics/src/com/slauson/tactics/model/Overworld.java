@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.model.Neighbor.NeighborType;
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.Utils;
 
 /**
  * Overworld of islands/regionsArray.
@@ -291,12 +291,12 @@ public class Overworld {
 	private void assignRegionPlayers() {
 		
 		// random player index
-		int playerIndex = Util.random().nextInt(players.size());
+		int playerIndex = Utils.random().nextInt(players.size());
 		
 		// random region indices
 		List<Integer> regionIndices = new ArrayList<Integer>(regions.size());		
 		for (int i = 0; i < regions.size(); i++) {
-			regionIndices.add(Util.random().nextInt(regionIndices.size() + 1), i);
+			regionIndices.add(Utils.random().nextInt(regionIndices.size() + 1), i);
 		}
 		
 		for (int i = 0; i < regionIndices.size(); i++) {

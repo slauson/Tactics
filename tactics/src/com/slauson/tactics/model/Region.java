@@ -2,7 +2,7 @@ package com.slauson.tactics.model;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.slauson.tactics.utils.Util;
+import com.slauson.tactics.utils.Utils;
 
 public class Region {
 	
@@ -47,7 +47,7 @@ public class Region {
 	}
 	
 	private void testRegion() {
-		int typeIndex = Util.random().nextInt(Unit.UnitType.values().length);
-		unit = new Unit(Unit.UnitType.values()[typeIndex], Util.random().nextInt((int)Unit.MAX_HEALTH));
+		int typeIndex = Utils.random().nextInt(Unit.UnitType.values().length);
+		unit = new Unit(Unit.UnitType.values()[typeIndex], Utils.random().nextInt((int)Unit.MAX_HEALTH));
 	}
 }
