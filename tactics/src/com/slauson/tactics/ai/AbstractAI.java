@@ -1,31 +1,80 @@
 package com.slauson.tactics.ai;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.slauson.tactics.model.Island;
+import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
+import com.slauson.tactics.utils.BattleUtils;
 
 public abstract class AbstractAI {
 
 	/**
 	 * Returns likelihood that attacking region could defeat defending region.
-	 * @param attacker
-	 * @param defender
+	 * (+: attacker more likely to win, -: defender more likely to win)
+	 * @param attackingRegion
+	 * @param defendingRegion
 	 * @return
 	 */
-	public float calculateBattleLikelihood(Region attacker, Region defender) {
-		return -1;
+	public float calculateBattleLikelihood(Region attackingRegion, Region defendingRegion) {
+		if (attackingRegion.unit == null) {
+			return -1;
+		}
+		if (defendingRegion.unit == null) {
+			return 1;
+		}
+		
+		float[] battleDamage = BattleUtils.calculateBattleDamage(attackingRegion, defendingRegion, 0);
+		
+		return battleDamage[0] / defendingRegion.unit.health - battleDamage[1] / attackingRegion.unit.health;
 	}
 	
 	/**
 	 * Returns strength of region against neighbors.
+	 * (sum of neighboring regions attack strength over region unit health). 
 	 * @param region
 	 * @return
 	 */
 	public float getRegionStrength(Region region) {
-		return -1;
+
+		if (region.unit == null) {
+			return -1;
+		}
+		
+		float result = 0;
+		
+		for (Neighbor neighbor : region.neighbors) {
+			// check if region can be attacked
+			if ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged())) {
+				// sum the defending region damage
+				result += BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1];
+			}
+		}
+		
+		return result / region.unit.health;
+	}
+	
+	/**
+	 * Returns strength of player on given island.
+	 * (sum of player's region's strengths on island).
+	 * @param island
+	 * @param player
+	 * @return
+	 */
+	public float getIslandStrength(Island island, Player player) {
+		
+		float result = 0;
+		
+		for (Region region : island.regions) {
+			if (region.player.equals(player)) {
+				result += getRegionStrength(region);
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -35,6 +84,14 @@ public abstract class AbstractAI {
 	 * @return
 	 */
 	public Map<Island, Float> getIslandStrengths(Overworld overworld, Player player) {
-		return null;
+		
+		Map<Island, Float> result = new HashMap<Island, Float>(overworld.islands.size());
+		
+		// go over each island
+		for (Island island : overworld.islands) {
+			result.put(island, getIslandStrength(island, player));
+		}
+		
+		return result;
 	}
 }

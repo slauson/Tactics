@@ -15,9 +15,10 @@ public class BattleUtils {
 	 * Returns attackingRegionAttackDamage, defendingRegionAttackDamage
 	 * @param attackingRegion
 	 * @param defendingRegion
+	 * @param randomFactor
 	 * @return
 	 */
-	public static float[] calculateBattleDamage(Region attackingRegion, Region defendingRegion) {
+	public static float[] calculateBattleDamage(Region attackingRegion, Region defendingRegion, float randomFactor) {
 		
 		float[] result = new float[2];
 		
@@ -30,15 +31,15 @@ public class BattleUtils {
 			switch (defendingRegion.unit.type) {
 			case CIRCLE:
 			case RANGED_CIRCLE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += -randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case SQUARE:
 			case RANGED_SQUARE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case TRIANGLE:
 			case RANGED_TRIANGLE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			}
 			break;
@@ -47,15 +48,15 @@ public class BattleUtils {
 			switch (defendingRegion.unit.type) {
 			case CIRCLE:
 			case RANGED_CIRCLE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case SQUARE:
 			case RANGED_SQUARE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += -randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case TRIANGLE:
 			case RANGED_TRIANGLE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			}
 			break;
@@ -64,15 +65,15 @@ public class BattleUtils {
 			switch (defendingRegion.unit.type) {
 			case CIRCLE:
 			case RANGED_CIRCLE:
-				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case SQUARE:
 			case RANGED_SQUARE:
-				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor -= Unit.UNIT_WEAKNESS_FACTOR - randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			case TRIANGLE:
 			case RANGED_TRIANGLE:
-				attackFactor += -Unit.UNIT_WEAKNESS_RANDOM_FACTOR + 2*Unit.UNIT_WEAKNESS_RANDOM_FACTOR*Utils.random().nextFloat();
+				attackFactor += -randomFactor + 2*randomFactor*Utils.random().nextFloat();
 				break;
 			}
 			break;
@@ -107,7 +108,7 @@ public class BattleUtils {
 		// only allow a single attack
 		attackingRegion.unit.hasAttack = false;
 		
-		float[] battleDamage = calculateBattleDamage(attackingRegion, defendingRegion);
+		float[] battleDamage = calculateBattleDamage(attackingRegion, defendingRegion, Unit.UNIT_WEAKNESS_RANDOM_FACTOR);
 		
 		float attackerAttackDamage = battleDamage[0];
 		float defenderAttackDamage = battleDamage[1];
