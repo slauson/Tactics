@@ -11,7 +11,48 @@ import com.slauson.tactics.model.Region;
 import com.slauson.tactics.utils.BattleUtils;
 
 public abstract class AbstractAI {
+	
+	/**
+	 * Returns next move for player to make.
+	 * @param overworld
+	 * @param player
+	 * @return
+	 */
+	public abstract Move getNextMove(Overworld overworld, Player player);
 
+	/**
+	 * Returns changes in region strengths for each possible move.
+	 * @param region
+	 * @return
+	 */
+	public Map<Region, Float> checkMoves(Region region) {
+		Map<Region, Float> result = new HashMap<Region, Float>();
+		
+		// for each potential region to move to
+		// check change in region strength(s) if unit moved to new region
+		// need to factor in unit on region to move to
+		
+		return result;
+	}
+	
+	/**
+	 * Returns likelihood that region could defeat neighboring regions.
+	 * @param region
+	 * @return
+	 */
+	public Map<Region, Float> checkAttacks(Region region) {
+		Map<Region, Float> result = new HashMap<Region, Float>();
+		
+		for (Neighbor neighbor : region.neighbors) {
+			// check if region can be attacked
+			if (!region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()))) {
+				result.put(neighbor.region, BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1]);
+			}
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Returns likelihood that attacking region could defeat defending region.
 	 * (+: attacker more likely to win, -: defender more likely to win)
@@ -48,13 +89,31 @@ public abstract class AbstractAI {
 		
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
-			if ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged())) {
+			if (!region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()))) {
 				// sum the defending region damage
 				result += BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1];
 			}
 		}
 		
 		return result / region.unit.health;
+	}
+	
+	/**
+	 * Returns region strengths on island for given player.
+	 * @param island
+	 * @param player
+	 * @return
+	 */
+	public Map<Region, Float> getRegionStrengths(Island island, Player player) {
+		Map<Region, Float> result = new HashMap<Region, Float>(island.regions.size());
+		
+		for (Region region : island.regions) {
+			if (region.player.equals(player)) {
+				result.put(region, getRegionStrength(region));
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -78,7 +137,7 @@ public abstract class AbstractAI {
 	}
 	
 	/**
-	 * Returns island strength for given player.
+	 * Returns island strengths for given player.
 	 * @param overworld
 	 * @param player
 	 * @return
