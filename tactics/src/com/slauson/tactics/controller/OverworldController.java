@@ -1,8 +1,10 @@
 package com.slauson.tactics.controller;
 
+import com.slauson.tactics.ai.Move;
 import com.slauson.tactics.model.Neighbor.NeighborType;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
+import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 import com.slauson.tactics.model.Unit.UnitType;
@@ -17,13 +19,20 @@ import com.slauson.tactics.utils.RegionUtils;
  */
 public class OverworldController extends Controller {
 	
+	private static float TIME_PER_MOVE = 2;
+	
 	private Overworld overworld;
 	private Region selectedRegion;
+	
+	private Move currentMove;
+	private float currentMoveTime;
 	
 	public OverworldController(Overworld overworld) {
 		this.overworld = overworld;
 		
 		selectedRegion = null;
+		currentMove = new Move(Move.Type.DUMMY);
+		currentMoveTime = 0;
 	}
 	
 	@Override
@@ -31,10 +40,19 @@ public class OverworldController extends Controller {
 		if (delta > MAX_DELTA) {
 			delta = MAX_DELTA;
 		}
+
+		if (overworld.activePlayer().type != Player.PlayerType.PLAYER) {
+			handleMove(delta);
+		}
 	}
 	
 	@Override
 	public boolean touchDown(float worldX, float worldY) {
+		
+		// only allow selecting regions for player controlled players
+		if (overworld.activePlayer().type != Player.PlayerType.PLAYER) {
+			return false;
+		}
 		
 		Region region = overworld.getContainingRegion(worldX, worldY);
 		if (region != null) {
@@ -204,25 +222,121 @@ public class OverworldController extends Controller {
 			}
 			
 			// move to next phase
-			overworld.nextPhase();
-			
-			if (overworld.phase == Phase.ATTACK) {
-				
-				RegionUtils.unmarkAllRegions(overworld);
-				
-				// move to next turn
-				overworld.nextTurn();
-				
-				PlayerUtils.setPlayerUnitsActive(overworld, overworld.activePlayer());
-			} else {
-				// handle reinforcements
-				PlayerUtils.updatePlayerReinforcements(overworld, overworld.activePlayer());
-				PlayerUtils.markPlayerReinforcements(overworld, overworld.activePlayer());
-			}
+			nextPhase();
 			
 			return true;
 		}
 		
 		return false;
+	}
+	
+	private void nextPhase() {
+		overworld.nextPhase();
+		
+		// next turn
+		if (overworld.phase == Phase.ATTACK) {
+			
+			RegionUtils.unmarkAllRegions(overworld);
+			
+			// move to next turn
+			overworld.nextTurn();
+			
+			PlayerUtils.setPlayerUnitsActive(overworld, overworld.activePlayer());
+		} else {
+			// handle reinforcements
+			PlayerUtils.updatePlayerReinforcements(overworld, overworld.activePlayer());
+			PlayerUtils.markPlayerReinforcements(overworld, overworld.activePlayer());
+		}
+	}
+	
+	private void handleMove(float delta) {
+		currentMoveTime -= delta;
+		
+		if (currentMoveTime < 0) {
+			
+			currentMove.numPhases--;
+			
+			// numPhases - 1
+			switch (currentMove.numPhases) {
+			case 1:
+				switch (currentMove.type) {
+				case ATTACK:
+				case MOVE:
+				case REINFORCE:
+					selectedRegion = currentMove.region;
+					break;
+				case END_PHASE:
+				default:
+					break;
+				}
+				break;
+			case 0:
+				switch (currentMove.type) {
+				case ATTACK:
+					Region updatedAttackingRegion = BattleUtils.handleBattle(currentMove.region, currentMove.otherRegion);
+					
+					// keep region selected if attacker won battle and can still move
+					if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
+						selectedRegion = updatedAttackingRegion;
+						selectedRegion.selected = true;
+						
+						RegionUtils.markRegionNeighbors(selectedRegion);
+					} else {
+						selectedRegion = null;
+					}
+					break;
+				case MOVE:
+					// swap units
+					Unit temp = currentMove.region.unit;
+					currentMove.region.unit = selectedRegion.unit;
+					selectedRegion.unit = temp;
+					
+					currentMove.region.unit.hasMove = false;
+					selectedRegion.unit.hasMove = false;
+					
+					if (currentMove.region.unit.hasAttack) {
+						selectedRegion = currentMove.region;
+						selectedRegion.selected = true;
+					
+						RegionUtils.markRegionNeighbors(selectedRegion);
+					} else {
+						selectedRegion = null;
+					}
+					break;
+				case REINFORCE:
+					// mark previously selected region
+					if (selectedRegion != null) {
+						selectedRegion.marked = true;
+						selectedRegion.selected = false;
+					}
+					
+					// new unit
+					if (currentMove.region.unit == null) {
+						currentMove.region.unit = new Unit(currentMove.unitType, Unit.MAX_HEALTH);
+						selectedRegion = currentMove.region;
+						selectedRegion.selected = true;
+						overworld.activePlayer().reinforcements--;
+					}
+					// existing unit
+					else {
+						currentMove.region.unit.health = Unit.MAX_HEALTH;
+						currentMove.region.marked = true;
+						selectedRegion = null;
+						overworld.activePlayer().reinforcements--;
+					}
+					break;
+				case END_PHASE:
+				default:
+					nextPhase();
+					break;
+				}
+				break;
+			case -1:
+				// get next move
+				currentMove = overworld.activePlayer().ai.getNextMove(overworld, overworld.activePlayer());
+				currentMoveTime = TIME_PER_MOVE;
+				break;
+			}
+		}
 	}
 }

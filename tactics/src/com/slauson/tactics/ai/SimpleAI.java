@@ -3,7 +3,7 @@ package com.slauson.tactics.ai;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 
-public class SimpleAI extends AbstractAI {
+public class SimpleAI extends AI {
 
 	@Override
 	public Move getNextMove(Overworld overworld, Player player) {

@@ -1,6 +1,7 @@
 package com.slauson.tactics.ai;
 
 import com.slauson.tactics.model.Region;
+import com.slauson.tactics.model.Unit.UnitType;
 
 /**
  * A type of move to make.
@@ -13,24 +14,46 @@ public class Move {
 		ATTACK,
 		MOVE,
 		REINFORCE,
-		END_PHASE
+		END_PHASE,
+		DUMMY
 	}
 	
 	public Type type;
 	public Region region;
 	public Region otherRegion;
+	public UnitType unitType;
+	public int numPhases;
 	
 	public Move(Type type) {
-		this(type, null, null);
+		this(type, null, null, null);
 	}
 	
 	public Move(Type type, Region region) {
-		this(type, region, null);
+		this(type, region, null, null);
 	}
 	
 	public Move(Type type, Region region, Region otherRegion) {
+		this(type, region, otherRegion, null);
+	}
+	
+	public Move(Type type, Region region, Region otherRegion, UnitType unitType) {
 		this.type = type;
 		this.region = region;
 		this.otherRegion = otherRegion;
+		this.unitType = unitType;
+		
+		switch (type) {
+		case ATTACK:
+		case MOVE:
+		case REINFORCE:
+			numPhases = 2;
+			break;
+		case END_PHASE:
+			numPhases = 1;
+			break;
+		case DUMMY:
+			numPhases = 0;
+			break;
+		}
 	}
 }

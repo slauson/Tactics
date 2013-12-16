@@ -8,7 +8,7 @@ import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 import com.slauson.tactics.utils.Utils;
 
-public class RandomAI extends AbstractAI {
+public class RandomAI extends AI {
 
 	@Override
 	public Move getNextMove(Overworld overworld, Player player) {

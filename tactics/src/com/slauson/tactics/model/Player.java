@@ -1,6 +1,8 @@
 package com.slauson.tactics.model;
 
 import com.badlogic.gdx.graphics.Color;
+import com.slauson.tactics.ai.AI;
+import com.slauson.tactics.ai.RandomAI;
 
 public class Player {
 	
@@ -8,11 +10,12 @@ public class Player {
 	public static int NUM_REINFORCEMENTS_PER_ISLAND = 1;
 	
 	public enum PlayerType {
-		PLAYER, AI
+		PLAYER, AI_RANDOM
 	}
 	
 	public int id;
 	public PlayerType type;
+	public AI ai;
 	
 	public Color color;
 	
@@ -27,6 +30,15 @@ public class Player {
 	
 	public Player(int id, PlayerType type) {
 		this.type = type;
+
+		switch (type) {
+		case AI_RANDOM:
+			ai = new RandomAI();
+			break;
+		default:
+			ai = null;
+			break;
+		}
 		
 		color = colors[colorIndex];
 		colorIndex++;

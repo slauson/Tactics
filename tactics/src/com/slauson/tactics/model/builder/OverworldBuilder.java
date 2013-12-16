@@ -98,7 +98,7 @@ public class OverworldBuilder {
 		// player always controls first player
 		players.add(new Player(0, PlayerType.PLAYER));
 		for (int i = 1; i < numPlayers; i++) {
-			players.add(new Player(i, PlayerType.AI));
+			players.add(new Player(i, PlayerType.AI_RANDOM));
 		}
 		
 		return new Overworld(width, height, regionsArray, islands, players);
@@ -221,7 +221,7 @@ public class OverworldBuilder {
 		// player always controls first player
 		players.add(new Player(0, PlayerType.PLAYER));
 		for (int i = 1; i < numPlayers; i++) {
-			players.add(new Player(i, PlayerType.AI));
+			players.add(new Player(i, PlayerType.AI_RANDOM));
 		}
 		
 		return new Overworld(width, height, regionsArray, islands, players);

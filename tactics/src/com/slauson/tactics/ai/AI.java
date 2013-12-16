@@ -13,7 +13,7 @@ import com.slauson.tactics.model.Region;
 import com.slauson.tactics.utils.BattleUtils;
 import com.slauson.tactics.utils.RegionUtils;
 
-public abstract class AbstractAI {
+public abstract class AI {
 	
 	/**
 	 * Returns next move for player to make.
