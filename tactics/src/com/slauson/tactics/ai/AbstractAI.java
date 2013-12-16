@@ -1,6 +1,8 @@
 package com.slauson.tactics.ai;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.slauson.tactics.model.Island;
@@ -9,6 +11,7 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.utils.BattleUtils;
+import com.slauson.tactics.utils.RegionUtils;
 
 public abstract class AbstractAI {
 	
@@ -89,7 +92,7 @@ public abstract class AbstractAI {
 		
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
-			if (!region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()))) {
+			if (RegionUtils.canAttack(region, neighbor)) {
 				// sum the defending region damage
 				result += BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1];
 			}
@@ -110,6 +113,26 @@ public abstract class AbstractAI {
 		for (Region region : island.regions) {
 			if (region.player.equals(player)) {
 				result.put(region, getRegionStrength(region));
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns region strengths on overworld for given player.
+	 * @param island
+	 * @param player
+	 * @return
+	 */
+	public Map<Region, Float> getRegionStrengths(Overworld overworld, Player player) {
+		Map<Region, Float> result = new HashMap<Region, Float>();
+		
+		for (Island island : overworld.islands) {
+			for (Region region : island.regions) {
+				if (region.player.equals(player)) {
+					result.put(region, getRegionStrength(region));
+				}
 			}
 		}
 		
@@ -153,4 +176,64 @@ public abstract class AbstractAI {
 		
 		return result;
 	}
+	
+	/**
+	 * Returns attackable regions from given region.
+	 * @param overworld
+	 * @param player
+	 * @return
+	 */
+	public List<Region> getAttacks(Region region) {
+		
+		List<Region> result = new ArrayList<Region>();
+		
+		for (Neighbor neighbor : region.neighbors) {
+			// check if region can be attacked
+			if (RegionUtils.canAttack(region, neighbor)) {
+				result.add(neighbor.region);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns list of regions given region can move to.
+	 * @param region
+	 * @return
+	 */
+	public List<Region> getMoves(Region region) {
+		
+		List<Region> result = new ArrayList<Region>();
+		
+		for (Neighbor neighbor : region.neighbors) {
+			if (neighbor.type.isMovable() && region.player.equals(neighbor.region.player) && (neighbor.region.unit == null || neighbor.region.unit.hasMove)) {
+				result.add(neighbor.region);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns regions owned by player.
+	 * @param overworld
+	 * @param player
+	 * @param hasUnits
+	 * @return
+	 */
+	public List<Region> getPlayerRegions(Overworld overworld, Player player, boolean hasUnits) {
+		List<Region> result = new ArrayList<Region>();
+		
+		for (Island island : overworld.islands) {
+			for (Region region : island.regions) {
+				if (region.player.equals(player) && (!hasUnits || region.unit != null)) {
+					result.add(region);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 }

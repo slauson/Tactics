@@ -11,6 +11,7 @@ public class Player {
 		PLAYER, AI
 	}
 	
+	public int id;
 	public PlayerType type;
 	
 	public Color color;
@@ -24,7 +25,7 @@ public class Player {
 	};
 	private static int colorIndex = 0;
 	
-	public Player(PlayerType type) {
+	public Player(int id, PlayerType type) {
 		this.type = type;
 		
 		color = colors[colorIndex];
@@ -39,4 +40,5 @@ public class Player {
 	public String toString() {
 		return color.toString();
 	}
+	
 }

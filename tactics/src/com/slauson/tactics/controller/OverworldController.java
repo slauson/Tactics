@@ -65,7 +65,7 @@ public class OverworldController extends Controller {
 					if (neighborType != null) {
 						
 						// attack
-						if (selectedRegion.unit.hasAttack && selectedRegion.player != region.player && region.unit != null &&
+						if (selectedRegion.unit.hasAttack && !selectedRegion.player.equals(region.player) && region.unit != null &&
 								((selectedRegion.unit.type.isRanged() && neighborType.isRanged()) || (!selectedRegion.unit.type.isRanged() && !neighborType.isRanged())))
 						{
 							Region updatedAttackingRegion = BattleUtils.handleBattle(selectedRegion, region);

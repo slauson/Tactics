@@ -175,5 +175,6 @@ public class BattleUtils {
 			// do nothing
 			return null;
 		}
-	}		
+	}
+	
 }

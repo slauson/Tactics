@@ -92,4 +92,14 @@ public class RegionUtils {
 		}
 	}
 	
+	/**
+	 * Returns true if region can attack given neighbor.
+	 * @param region
+	 * @param neighbor
+	 * @return
+	 */
+	public static boolean canAttack(Region region, Neighbor neighbor) {
+		return region.unit != null && region.unit.hasAttack && !region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()));
+	}
+	
 }
