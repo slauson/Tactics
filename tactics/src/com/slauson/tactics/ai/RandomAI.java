@@ -6,6 +6,8 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.utils.PlayerUtils;
+import com.slauson.tactics.utils.RegionUtils;
 import com.slauson.tactics.utils.Utils;
 
 public class RandomAI extends AI {
@@ -13,7 +15,7 @@ public class RandomAI extends AI {
 	@Override
 	public Move getNextMove(Overworld overworld, Player player) {
 		
-		List<Region> regions = getPlayerRegions(overworld, player, false);
+		List<Region> regions = PlayerUtils.getPlayerRegions(overworld, player, false);
 		
 		// choose random region to take action with
 		Region region = regions.get(Utils.random().nextInt(regions.size()));
@@ -29,7 +31,7 @@ public class RandomAI extends AI {
 			else if (region.unit.hasAttack) {
 				
 				// get regions to attack
-				List<Region> attackRegions = getAttacks(region);
+				List<Region> attackRegions = RegionUtils.getAttacks(region);
 				
 				// no region to attack
 				if (attackRegions.size() == 0) {
@@ -45,7 +47,7 @@ public class RandomAI extends AI {
 			else if (region.unit.hasMove) {
 				
 				// get regions to move to
-				List<Region> moveRegions = getMoves(region);
+				List<Region> moveRegions = RegionUtils.getMoves(region);
 				
 				// no regions to move to
 				if (moveRegions.size() == 0) {

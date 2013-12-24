@@ -1,5 +1,8 @@
 package com.slauson.tactics.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
@@ -55,5 +58,26 @@ public class PlayerUtils {
 		}
 		
 		player.reinforcements += newReinforcements;
+	}
+	
+	/**
+	 * Returns regions owned by player.
+	 * @param overworld
+	 * @param player
+	 * @param hasUnits
+	 * @return
+	 */
+	public static List<Region> getPlayerRegions(Overworld overworld, Player player, boolean hasUnits) {
+		List<Region> result = new ArrayList<Region>();
+		
+		for (Island island : overworld.islands) {
+			for (Region region : island.regions) {
+				if (region.player.equals(player) && (!hasUnits || region.unit != null)) {
+					result.add(region);
+				}
+			}
+		}
+		
+		return result;
 	}
 }
