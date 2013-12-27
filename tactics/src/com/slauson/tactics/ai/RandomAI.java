@@ -10,6 +10,11 @@ import com.slauson.tactics.utils.PlayerUtils;
 import com.slauson.tactics.utils.RegionUtils;
 import com.slauson.tactics.utils.Utils;
 
+/**
+ * AI class that chooses a random possible move.
+ * @author josh
+ *
+ */
 public class RandomAI extends AI {
 
 	@Override

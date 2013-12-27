@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Neighbor.NeighborType;
-import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
+import com.slauson.tactics.model.Unit;
 
 /**
  * Helper methods relating to regions.
@@ -110,16 +111,45 @@ public class RegionUtils {
 	}
 	
 	/**
+	 * Returns true if region can move to given neighbor.
+	 * @param region
+	 * @param neighbor
+	 * @return
+	 */
+	public static boolean canMove(Region region, Neighbor neighbor) {
+		return region.unit != null && region.unit.hasMove && neighbor.type.isMovable() && region.player.equals(neighbor.region.player) && (neighbor.region.unit == null || neighbor.region.unit.hasMove);
+	}
+	
+	/**
 	 * Returns changes in region strengths for each possible move.
 	 * @param region
 	 * @return
 	 */
-	public static Map<Region, Float> checkMoves(Region region) {
-		Map<Region, Float> result = new HashMap<Region, Float>();
+	public static Map<Neighbor, Float> checkMoves(Region region) {
+		Map<Neighbor, Float> result = new HashMap<Neighbor, Float>();
 		
-		// for each potential region to move to
-		// check change in region strength(s) if unit moved to new region
-		// need to factor in unit on region to move to
+		for (Neighbor neighbor : region.neighbors) {
+			// check if neighbor can be moved to
+			if (RegionUtils.canMove(region, neighbor)) {
+				// get current strengths of region, neighbor
+				float regionStrength = RegionUtils.getRegionStrength(region);
+				float neighborStrength = RegionUtils.getRegionStrength(neighbor.region);
+				
+				// swap units, see change in strengths
+				Unit temp = region.unit;
+				region.unit = neighbor.region.unit;
+				neighbor.region.unit = temp;
+				float regionMoveStrength = RegionUtils.getRegionStrength(region);
+				float neighborMoveStrength = RegionUtils.getRegionStrength(neighbor.region);
+				
+				// put units back
+				temp = region.unit;
+				region.unit = neighbor.region.unit;
+				neighbor.region.unit = temp;
+				
+				result.put(neighbor, regionMoveStrength + neighborMoveStrength - regionStrength - neighborStrength);
+			}
+		}
 		
 		return result;
 	}
@@ -134,7 +164,7 @@ public class RegionUtils {
 		
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
-			if (!region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()))) {
+			if (RegionUtils.canAttack(region, neighbor)) {
 				result.put(neighbor.region, BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1]);
 			}
 		}
@@ -293,7 +323,7 @@ public class RegionUtils {
 		List<Region> result = new ArrayList<Region>();
 		
 		for (Neighbor neighbor : region.neighbors) {
-			if (neighbor.type.isMovable() && region.player.equals(neighbor.region.player) && (neighbor.region.unit == null || neighbor.region.unit.hasMove)) {
+			if (RegionUtils.canMove(region, neighbor)) {
 				result.add(neighbor.region);
 			}
 		}
