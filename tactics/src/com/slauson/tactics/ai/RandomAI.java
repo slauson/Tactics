@@ -77,7 +77,11 @@ public class RandomAI extends AI {
 			if (player.reinforcements == 0 || (region.unit != null && region.unit.health == Unit.MAX_HEALTH)) {
 				return new Move(Move.Type.END_PHASE);
 			}
-			// reinforce region
+			// reinforce region without unit
+			else if (region.unit == null) {
+				return new Move(Move.Type.REINFORCE, region, Unit.UnitType.values()[Utils.random().nextInt(Unit.UnitType.values().length)]);
+			}
+			// reinforce region with existing unit
 			else {
 				return new Move(Move.Type.REINFORCE, region);
 			}

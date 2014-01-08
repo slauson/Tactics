@@ -262,66 +262,79 @@ public class OverworldController extends Controller {
 				switch (currentMove.type) {
 				case ATTACK:
 				case MOVE:
-				case REINFORCE:
-					selectedRegion = currentMove.region;
+					// select region
+					currentMove.region.selected = true;
+					
+					// mark neighbors
+					RegionUtils.markRegionNeighbors(currentMove.region);
 					break;
+				case REINFORCE:
 				case END_PHASE:
 				default:
 					break;
 				}
+				currentMoveTime = TIME_PER_MOVE;
 				break;
 			case 0:
 				switch (currentMove.type) {
 				case ATTACK:
 					Region updatedAttackingRegion = BattleUtils.handleBattle(currentMove.region, currentMove.otherRegion);
 					
-					// keep region selected if attacker won battle and can still move
-					if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
-						selectedRegion = updatedAttackingRegion;
-						selectedRegion.selected = true;
+					// deselect region and unmark neighboring regions
+					currentMove.region.selected = false;
+					RegionUtils.unmarkRegionNeighbors(currentMove.region);
+					
+					if (updatedAttackingRegion != null) {
 						
-						RegionUtils.markRegionNeighbors(selectedRegion);
-					} else {
-						selectedRegion = null;
+						// remove reference to region we're attacking if it was defeated
+						if (updatedAttackingRegion.equals(currentMove.otherRegion)) {
+							currentMove.otherRegion = null;
+						}
+						
+						currentMove.region = updatedAttackingRegion;
+						
+						// reselect and re-mark neighbors only if attacker can move
+						if (currentMove.region.unit != null && currentMove.region.unit.hasMove) {
+							currentMove.region.selected = true;
+							RegionUtils.markRegionNeighbors(currentMove.region);
+						}
 					}
 					break;
 				case MOVE:
 					// swap units
 					Unit temp = currentMove.region.unit;
-					currentMove.region.unit = selectedRegion.unit;
-					selectedRegion.unit = temp;
+					currentMove.region.unit = currentMove.otherRegion.unit;
+					currentMove.otherRegion.unit = temp;
 					
-					currentMove.region.unit.hasMove = false;
-					selectedRegion.unit.hasMove = false;
+					// unmark neighbors
+					RegionUtils.unmarkRegionNeighbors(currentMove.otherRegion);
 					
-					if (currentMove.region.unit.hasAttack) {
-						selectedRegion = currentMove.region;
-						selectedRegion.selected = true;
-					
-						RegionUtils.markRegionNeighbors(selectedRegion);
-					} else {
-						selectedRegion = null;
+					// unit can't move again
+					if (currentMove.region.unit != null) {
+						currentMove.region.unit.hasMove = false;
+					}
+					if (currentMove.otherRegion.unit != null) {
+						currentMove.otherRegion.unit.hasMove = false;
+						
+						// keep marked if unit can still attack
+						if (currentMove.otherRegion.unit.hasAttack) {
+							currentMove.otherRegion.selected = true;
+							RegionUtils.markRegionNeighbors(currentMove.otherRegion);
+						}
 					}
 					break;
 				case REINFORCE:
-					// mark previously selected region
-					if (selectedRegion != null) {
-						selectedRegion.marked = true;
-						selectedRegion.selected = false;
-					}
+					// mark region
+					currentMove.region.marked = true;
 					
 					// new unit
 					if (currentMove.region.unit == null) {
 						currentMove.region.unit = new Unit(currentMove.unitType, Unit.MAX_HEALTH);
-						selectedRegion = currentMove.region;
-						selectedRegion.selected = true;
 						overworld.activePlayer().reinforcements--;
 					}
 					// existing unit
 					else {
 						currentMove.region.unit.health = Unit.MAX_HEALTH;
-						currentMove.region.marked = true;
-						selectedRegion = null;
 						overworld.activePlayer().reinforcements--;
 					}
 					break;
@@ -330,11 +343,21 @@ public class OverworldController extends Controller {
 					nextPhase();
 					break;
 				}
+				currentMoveTime = TIME_PER_MOVE;
 				break;
 			case -1:
+				
+				// deselect and unmark neighbors for non-reinforcement moves
+				if (currentMove.region != null && currentMove.type != Move.Type.REINFORCE) {
+					currentMove.region.selected = false;
+					RegionUtils.unmarkRegionNeighbors(currentMove.region);
+				}
+				
 				// get next move
 				currentMove = overworld.activePlayer().ai.getNextMove(overworld, overworld.activePlayer());
-				currentMoveTime = TIME_PER_MOVE;
+				
+				System.out.println("next move: " + currentMove);
+				// don't reset move time here so we go directly into first phase of next move
 				break;
 			}
 		}

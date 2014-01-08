@@ -107,7 +107,10 @@ public class RegionUtils {
 	 * @return
 	 */
 	public static boolean canAttack(Region region, Neighbor neighbor) {
-		return region.unit != null && region.unit.hasAttack && !region.player.equals(neighbor.region.player) && ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()));
+		return region.unit != null && region.unit.hasAttack
+				&& neighbor.region.unit != null
+				&& !region.player.equals(neighbor.region.player)
+				&& ((!region.unit.type.isRanged() && !neighbor.type.isRanged()) || (region.unit.type.isRanged() && neighbor.type.isRanged()));
 	}
 	
 	/**
@@ -117,7 +120,10 @@ public class RegionUtils {
 	 * @return
 	 */
 	public static boolean canMove(Region region, Neighbor neighbor) {
-		return region.unit != null && region.unit.hasMove && neighbor.type.isMovable() && region.player.equals(neighbor.region.player) && (neighbor.region.unit == null || neighbor.region.unit.hasMove);
+		return region.unit != null && region.unit.hasMove
+				&& neighbor.type.isMovable()
+				&& region.player.equals(neighbor.region.player)
+				&& (neighbor.region.unit == null || neighbor.region.unit.hasMove);
 	}
 	
 	/**

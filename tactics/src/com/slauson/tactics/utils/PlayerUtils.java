@@ -67,12 +67,12 @@ public class PlayerUtils {
 	 * @param hasUnits
 	 * @return
 	 */
-	public static List<Region> getPlayerRegions(Overworld overworld, Player player, boolean hasUnits) {
+	public static List<Region> getPlayerRegions(Overworld overworld, Player player, boolean mustHaveUnits) {
 		List<Region> result = new ArrayList<Region>();
 		
 		for (Island island : overworld.islands) {
 			for (Region region : island.regions) {
-				if (region.player.equals(player) && (!hasUnits || region.unit != null)) {
+				if (region.player.equals(player) && (!mustHaveUnits || region.unit != null)) {
 					result.add(region);
 				}
 			}
