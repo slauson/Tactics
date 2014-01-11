@@ -41,7 +41,7 @@ public class OverworldController extends Controller {
 			delta = MAX_DELTA;
 		}
 
-		if (overworld.activePlayer().type != Player.PlayerType.PLAYER) {
+		if (overworld.activePlayer().type != Player.Type.PLAYER) {
 			handleMove(delta);
 		}
 	}
@@ -50,7 +50,7 @@ public class OverworldController extends Controller {
 	public boolean touchDown(float worldX, float worldY) {
 		
 		// only allow selecting regions for player controlled players
-		if (overworld.activePlayer().type != Player.PlayerType.PLAYER) {
+		if (overworld.activePlayer().type != Player.Type.PLAYER) {
 			return false;
 		}
 		
@@ -214,17 +214,19 @@ public class OverworldController extends Controller {
 	public boolean keyTyped(char character) {
 		switch (character) {
 		case ' ':
-			// unmark previously selected region
-			if (selectedRegion != null) {
-				RegionUtils.unmarkRegionNeighbors(selectedRegion);
-				selectedRegion.selected = false;
-				selectedRegion = null;
+			if (overworld.activePlayer().type == Player.Type.PLAYER) {
+				// unmark previously selected region
+				if (selectedRegion != null) {
+					RegionUtils.unmarkRegionNeighbors(selectedRegion);
+					selectedRegion.selected = false;
+					selectedRegion = null;
+				}
+				
+				// move to next phase
+				nextPhase();
+				
+				return true;
 			}
-			
-			// move to next phase
-			nextPhase();
-			
-			return true;
 		}
 		
 		return false;
@@ -306,8 +308,9 @@ public class OverworldController extends Controller {
 					currentMove.region.unit = currentMove.otherRegion.unit;
 					currentMove.otherRegion.unit = temp;
 					
-					// unmark neighbors
-					RegionUtils.unmarkRegionNeighbors(currentMove.otherRegion);
+					// deselect region and unmark neighboring regions
+					currentMove.region.selected = false;
+					RegionUtils.unmarkRegionNeighbors(currentMove.region);
 					
 					// unit can't move again
 					if (currentMove.region.unit != null) {
@@ -347,10 +350,16 @@ public class OverworldController extends Controller {
 				break;
 			case -1:
 				
-				// deselect and unmark neighbors for non-reinforcement moves
-				if (currentMove.region != null && currentMove.type != Move.Type.REINFORCE) {
+				// deselect and unmark neighbors for attack moves
+				if (currentMove.type == Move.Type.ATTACK && currentMove.region != null) {
 					currentMove.region.selected = false;
 					RegionUtils.unmarkRegionNeighbors(currentMove.region);
+				}
+				
+				// deselect and unmark neighbors for move moves
+				if (currentMove.type == Move.Type.MOVE && currentMove.otherRegion != null) {
+					currentMove.otherRegion.selected = false;
+					RegionUtils.unmarkRegionNeighbors(currentMove.otherRegion);
 				}
 				
 				// get next move

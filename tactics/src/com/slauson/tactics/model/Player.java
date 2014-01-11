@@ -9,12 +9,12 @@ public class Player {
 	public static int NUM_FREE_REINFORCEMENTS = 3;
 	public static int NUM_REINFORCEMENTS_PER_ISLAND = 1;
 	
-	public enum PlayerType {
+	public enum Type {
 		PLAYER, AI_RANDOM
 	}
 	
 	public int id;
-	public PlayerType type;
+	public Type type;
 	public AI ai;
 	
 	public Color color;
@@ -28,7 +28,7 @@ public class Player {
 	};
 	private static int colorIndex = 0;
 	
-	public Player(int id, PlayerType type) {
+	public Player(int id, Type type) {
 		this.type = type;
 
 		switch (type) {

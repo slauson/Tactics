@@ -122,7 +122,7 @@ public class RegionUtils {
 	public static boolean canMove(Region region, Neighbor neighbor) {
 		return region.unit != null && region.unit.hasMove
 				&& neighbor.type.isMovable()
-				&& region.player.equals(neighbor.region.player)
+				&& (region.player.equals(neighbor.region.player) || neighbor.region.unit == null)
 				&& (neighbor.region.unit == null || neighbor.region.unit.hasMove);
 	}
 	

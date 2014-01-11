@@ -32,6 +32,10 @@ public class Move {
 		this(type, region, null, null);
 	}
 	
+	public Move(Type type, Region region, UnitType unitType) {
+		this(type, region, null, unitType);
+	}
+	
 	public Move(Type type, Region region, Region otherRegion) {
 		this(type, region, otherRegion, null);
 	}
@@ -55,5 +59,16 @@ public class Move {
 			numPhases = 0;
 			break;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s: %s, %s, %s, %d",
+				this.type.name(),
+				region != null ? region.toString() : "null",
+				otherRegion != null ? otherRegion.toString() : "null",
+				unitType != null ? unitType.name() : "null",
+				numPhases
+			);
 	}
 }
