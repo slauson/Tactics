@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.slauson.tactics.model.Island;
 import com.slauson.tactics.model.Neighbor;
-import com.slauson.tactics.model.Neighbor.NeighborType;
+import com.slauson.tactics.model.Neighbor.Type;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
@@ -44,7 +44,7 @@ public class RegionUtils {
 					hasAction = true;
 				}
 				// only mark direct regions owned by other players with units for attacks
-				else if (neighbor.type == NeighborType.DIRECT && region.unit.hasAttack &&
+				else if (neighbor.type == Type.DIRECT && region.unit.hasAttack &&
 						region.player != neighbor.region.player && neighbor.region.unit != null)
 				{
 					neighbor.region.marked = true;
@@ -138,15 +138,15 @@ public class RegionUtils {
 			// check if neighbor can be moved to
 			if (RegionUtils.canMove(region, neighbor)) {
 				// get current strengths of region, neighbor
-				float regionStrength = RegionUtils.getRegionStrength(region);
-				float neighborStrength = RegionUtils.getRegionStrength(neighbor.region);
+				float regionStrength = RegionUtils.getRegionBattleStrength(region);
+				float neighborStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 				
 				// swap units, see change in strengths
 				Unit temp = region.unit;
 				region.unit = neighbor.region.unit;
 				neighbor.region.unit = temp;
-				float regionMoveStrength = RegionUtils.getRegionStrength(region);
-				float neighborMoveStrength = RegionUtils.getRegionStrength(neighbor.region);
+				float regionMoveStrength = RegionUtils.getRegionBattleStrength(region);
+				float neighborMoveStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 				
 				// put units back
 				temp = region.unit;
@@ -171,8 +171,73 @@ public class RegionUtils {
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
 			if (RegionUtils.canAttack(region, neighbor)) {
-				result.put(neighbor.region, BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1]);
+				float[] battleDamage = BattleUtils.calculateBattleDamage(region, neighbor.region, 0);
+				result.put(neighbor.region, battleDamage[0] - battleDamage[1]);
 			}
+		}
+		
+		return result;
+	}
+	
+	public static class ReinforcementType {
+		public float strengthChange = -1;
+		public Unit.Type unitType = null;
+	}
+	
+	/**
+	 * Returns change in battle strength for player regions
+	 * @return
+	 */
+	public static Map<Region, ReinforcementType> checkReinforcements(Overworld overworld, Player player) {
+		
+		Map<Region, ReinforcementType> result = new HashMap<Region, ReinforcementType>(); 
+		
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player)) {
+				result.put(region, getBestReinforcement(region));
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns best reinforcement for given region.
+	 * @param region
+	 * @return
+	 */
+	public static ReinforcementType getBestReinforcement(Region region) {
+		
+		ReinforcementType result = new ReinforcementType();
+		
+		// existing unit
+		if (region.unit != null) {
+			float originalRegionHealth = region.unit.health;
+			float originalBattleStrength = getRegionBattleStrength(region);
+			
+			// simulate max health
+			region.unit.health = Unit.MAX_HEALTH;
+			result.strengthChange = getRegionBattleStrength(region) - originalBattleStrength;
+			region.unit.health = originalRegionHealth;
+		}
+		// new unit
+		else {
+			
+			// get optimal unit type
+			// check each possible unit type
+			for (Unit.Type unitType : Unit.Type.values()) {
+				region.unit = new Unit(unitType, Unit.MAX_HEALTH);
+				
+				float regionBattleStrength = getRegionBattleStrength(region);
+				
+				if (result.unitType == null || regionBattleStrength > result.strengthChange) {
+					result.strengthChange = regionBattleStrength;
+					result.unitType = unitType;
+				}
+			}
+			
+			// reset region to have no unit
+			region.unit = null;
 		}
 		
 		return result;
@@ -204,7 +269,7 @@ public class RegionUtils {
 	 * @param region
 	 * @return
 	 */
-	public static float getRegionStrength(Region region) {
+	public static float getRegionBattleStrength(Region region) {
 
 		if (region.unit == null) {
 			return -1;
@@ -215,8 +280,8 @@ public class RegionUtils {
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
 			if (RegionUtils.canAttack(region, neighbor)) {
-				// sum the defending region damage
-				result += BattleUtils.calculateBattleDamage(region, neighbor.region, 0)[1];
+				// sum the difference in attacking region damage and defending region damage
+				result += calculateBattleLikelihood(region, neighbor.region);
 			}
 		}
 		
@@ -224,17 +289,17 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns region strengths on island for given player.
+	 * Returns region battle strengths on island for given player.
 	 * @param island
 	 * @param player
 	 * @return
 	 */
-	public static Map<Region, Float> getRegionStrengths(Island island, Player player) {
-		Map<Region, Float> result = new HashMap<Region, Float>(island.regions.size());
+	public static Map<Region, Float> getRegionBattleStrengths(Island island, Player player) {
+		Map<Region, Float> result = new HashMap<Region, Float>();
 		
 		for (Region region : island.regions) {
 			if (region.player.equals(player)) {
-				result.put(region, getRegionStrength(region));
+				result.put(region, getRegionBattleStrength(region));
 			}
 		}
 		
@@ -242,18 +307,18 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns region strengths on overworld for given player.
+	 * Returns region battle strengths on overworld for given player.
 	 * @param island
 	 * @param player
 	 * @return
 	 */
-	public static Map<Region, Float> getRegionStrengths(Overworld overworld, Player player) {
+	public static Map<Region, Float> getRegionBattleStrengths(Overworld overworld, Player player) {
 		Map<Region, Float> result = new HashMap<Region, Float>();
 		
 		for (Island island : overworld.islands) {
 			for (Region region : island.regions) {
 				if (region.player.equals(player)) {
-					result.put(region, getRegionStrength(region));
+					result.put(region, getRegionBattleStrength(region));
 				}
 			}
 		}
@@ -262,19 +327,19 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns strength of player on given island.
+	 * Returns battle strength of player on given island.
 	 * (sum of player's region's strengths on island).
 	 * @param island
 	 * @param player
 	 * @return
 	 */
-	public static float getIslandStrength(Island island, Player player) {
+	public static float getIslandBattleStrength(Island island, Player player) {
 		
 		float result = 0;
 		
 		for (Region region : island.regions) {
 			if (region.player.equals(player)) {
-				result += getRegionStrength(region);
+				result += getRegionBattleStrength(region);
 			}
 		}
 		
@@ -282,7 +347,56 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns island strengths for given player.
+	 * Returns island battle strengths for given player.
+	 * @param overworld
+	 * @param player
+	 * @return
+	 */
+	public static Map<Island, Float> getIslandBattleStrengths(Overworld overworld, Player player) {
+		
+		Map<Island, Float> result = new HashMap<Island, Float>(overworld.islands.size());
+		
+		// go over each island
+		for (Island island : overworld.islands) {
+			result.put(island, getIslandBattleStrength(island, player));
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns strength of region.
+	 * @param region
+	 * @return
+	 */
+	public static float getRegionStrength(Region region) {
+		return region.unit != null ? region.unit.health : 0; 
+	}
+	
+	/**
+	 * Returns strength of player on given island.
+	 * (sum of player's region's strengths over total region strength on island).
+	 * @param island
+	 * @param player
+	 * @return
+	 */
+	public static float getIslandStrength(Island island, Player player) {
+		
+		float playerStrength = 0;
+		float islandStrength = 0;
+		
+		for (Region region : island.regions) {
+			if (region.player.equals(player)) {
+				playerStrength += getRegionStrength(region);
+			}
+			islandStrength += getRegionStrength(region);
+		}
+		
+		return playerStrength / islandStrength;
+	}
+	
+	/**
+	 * Returns island strengths for given player
 	 * @param overworld
 	 * @param player
 	 * @return

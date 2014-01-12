@@ -1,31 +1,89 @@
 package com.slauson.tactics.ai;
 
+import java.util.Map;
+
+import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
+import com.slauson.tactics.model.Region;
+import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.utils.RegionUtils;
+import com.slauson.tactics.utils.RegionUtils.ReinforcementType;
 
 public class SimpleAI extends AI {
+	
+	private static final float MIN_MOVE_THRESHOLD = Unit.MAX_HEALTH / 2;
 
 	@Override
 	public Move getNextMove(Overworld overworld, Player player) {
 
-		// get islands ordered by player strength
-		
 		// attack phase
 		if (overworld.phase == Overworld.Phase.ATTACK) {
 			
-			// go through each island
-			// go through each region based on strength, checking potential moves
+			float best = 0;
+			Region bestRegion = null;
+			Region bestMoveRegion = null;
+			Neighbor bestMoveNeighbor = null;
 			
+			for (Region region : overworld.regions) {
+				if (region.player.equals(player)) {
+					
+					// check attacks
+					Map<Region, Float> regionAttacks = RegionUtils.checkAttacks(region);
+					
+					for (Region attackRegion : regionAttacks.keySet()) {
+						if (regionAttacks.get(attackRegion) > best) {
+							best = regionAttacks.get(attackRegion);
+							bestRegion = region;
+							bestMoveRegion = attackRegion;
+						}
+					}
+					
+					// check moves
+					Map<Neighbor, Float> regionMoves = RegionUtils.checkMoves(region);
+					
+					for (Neighbor neighbor : regionMoves.keySet()) {
+						if (regionMoves.get(neighbor) > best) {
+							best = regionMoves.get(neighbor);
+							bestRegion = region;
+							bestMoveNeighbor = neighbor;
+						}
+					}
+				}
+			}
+			
+			if (best > MIN_MOVE_THRESHOLD && bestMoveNeighbor != null) {
+				System.out.println("best move: " + best + " - " + new Move(Move.Type.MOVE, bestRegion, bestMoveNeighbor.region));
+				return new Move(Move.Type.MOVE, bestRegion, bestMoveNeighbor.region);
+			} else if (best > MIN_MOVE_THRESHOLD && bestMoveRegion != null) {
+				System.out.println("best move: " + best + " - " + new Move(Move.Type.ATTACK, bestRegion, bestMoveRegion));
+				return new Move(Move.Type.ATTACK, bestRegion, bestMoveRegion);
+			}
+			
+			return new Move(Move.Type.END_PHASE);
 		}
 		// reinforce phase
-		else {
+		else if (player.reinforcements > 0) {
 			
-			// go through each island
+			// get reinforcements
+			Map<Region, ReinforcementType> reinforcements = RegionUtils.checkReinforcements(overworld, player);
+			
+			ReinforcementType bestReinforcement = null;
+			Region bestReinforcementRegion = null;
+			
 			// go through each region based on strength, checking if should reinforce
+			for (Region region : reinforcements.keySet()) {
+				
+				if (bestReinforcement == null || reinforcements.get(region).strengthChange > bestReinforcement.strengthChange) {
+					bestReinforcement = reinforcements.get(region);
+					bestReinforcementRegion = region;
+				}
+			}
 			
+			return new Move(Move.Type.REINFORCE, bestReinforcementRegion, bestReinforcement.unitType);
 		}
 		
-		return null;
+		return new Move(Move.Type.END_PHASE);
 	}
 
 }
