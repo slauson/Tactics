@@ -1,11 +1,15 @@
 package com.slauson.tactics.ai;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.utils.BattleUtils;
 import com.slauson.tactics.utils.PlayerUtils;
 import com.slauson.tactics.utils.RegionUtils;
 import com.slauson.tactics.utils.Utils;
@@ -19,6 +23,125 @@ public abstract class AI {
 	 * @return
 	 */
 	public abstract Move getNextMove(Overworld overworld, Player player);
+	
+	/**
+	 * Returns changes in region strengths for each possible move.
+	 * @param region
+	 * @return
+	 */
+	public static Map<Neighbor, Float> checkMoves(Region region) {
+		Map<Neighbor, Float> result = new HashMap<Neighbor, Float>();
+		
+		for (Neighbor neighbor : region.neighbors) {
+			// check if neighbor can be moved to
+			if (RegionUtils.canMove(region, neighbor)) {
+				// get current strengths of region, neighbor
+				float regionStrength = RegionUtils.getRegionBattleStrength(region);
+				float neighborStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
+				
+				// swap units, see change in strengths
+				Unit temp = region.unit;
+				region.unit = neighbor.region.unit;
+				neighbor.region.unit = temp;
+				float regionMoveStrength = RegionUtils.getRegionBattleStrength(region);
+				float neighborMoveStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
+				
+				// put units back
+				temp = region.unit;
+				region.unit = neighbor.region.unit;
+				neighbor.region.unit = temp;
+				
+				result.put(neighbor, regionMoveStrength + neighborMoveStrength - regionStrength - neighborStrength);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns likelihood that region could defeat neighboring regions.
+	 * @param region
+	 * @return
+	 */
+	public static Map<Region, Float> checkAttacks(Region region) {
+		Map<Region, Float> result = new HashMap<Region, Float>();
+		
+		for (Neighbor neighbor : region.neighbors) {
+			// check if region can be attacked
+			if (RegionUtils.canAttack(region, neighbor)) {
+				float[] battleDamage = BattleUtils.calculateBattleDamage(region, neighbor.region, 0);
+				result.put(neighbor.region, battleDamage[0] - battleDamage[1]);
+			}
+		}
+		
+		return result;
+	}
+	
+	public static class ReinforcementType {
+		public float strengthChange = -1;
+		public Unit.Type unitType = null;
+	}
+	
+	/**
+	 * Returns change in battle strength for player regions
+	 * @return
+	 */
+	public static Map<Region, ReinforcementType> checkReinforcements(Overworld overworld, Player player) {
+		
+		Map<Region, ReinforcementType> result = new HashMap<Region, ReinforcementType>(); 
+		
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player)) {
+				result.put(region, getBestReinforcement(region));
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Returns best reinforcement for given region.
+	 * @param region
+	 * @return
+	 */
+	public static ReinforcementType getBestReinforcement(Region region) {
+		
+		ReinforcementType result = new ReinforcementType();
+		
+		// existing unit
+		if (region.unit != null) {
+			float originalRegionHealth = region.unit.health;
+			float originalBattleStrength = RegionUtils.getRegionBattleStrength(region);
+			
+			// simulate max health
+			region.unit.health = Unit.MAX_HEALTH;
+			result.strengthChange = RegionUtils.getRegionBattleStrength(region) - originalBattleStrength;
+			region.unit.health = originalRegionHealth;
+		}
+		// new unit
+		else {
+			
+			// get optimal unit type
+			// check each possible unit type
+			for (Unit.Type unitType : Unit.Type.values()) {
+				region.unit = new Unit(unitType, Unit.MAX_HEALTH);
+				
+				float regionBattleStrength = RegionUtils.getRegionBattleStrength(region);
+				
+				if (result.unitType == null || regionBattleStrength > result.strengthChange) {
+					result.strengthChange = regionBattleStrength;
+					result.unitType = unitType;
+				}
+			}
+			
+			// reset region to have no unit
+			region.unit = null;
+		}
+		
+		return result;
+	}
+	
+	
 	
 	/**
 	 * Returns random move (attack or move).

@@ -7,8 +7,6 @@ import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
-import com.slauson.tactics.utils.RegionUtils;
-import com.slauson.tactics.utils.RegionUtils.ReinforcementType;
 
 public class SimpleAI extends AI {
 	
@@ -29,7 +27,7 @@ public class SimpleAI extends AI {
 				if (region.player.equals(player)) {
 					
 					// check attacks
-					Map<Region, Float> regionAttacks = RegionUtils.checkAttacks(region);
+					Map<Region, Float> regionAttacks = checkAttacks(region);
 					
 					for (Region attackRegion : regionAttacks.keySet()) {
 						if (regionAttacks.get(attackRegion) > best) {
@@ -40,7 +38,7 @@ public class SimpleAI extends AI {
 					}
 					
 					// check moves
-					Map<Neighbor, Float> regionMoves = RegionUtils.checkMoves(region);
+					Map<Neighbor, Float> regionMoves = checkMoves(region);
 					
 					for (Neighbor neighbor : regionMoves.keySet()) {
 						if (regionMoves.get(neighbor) > best) {
@@ -66,7 +64,7 @@ public class SimpleAI extends AI {
 		else if (player.reinforcements > 0) {
 			
 			// get reinforcements
-			Map<Region, ReinforcementType> reinforcements = RegionUtils.checkReinforcements(overworld, player);
+			Map<Region, ReinforcementType> reinforcements = checkReinforcements(overworld, player);
 			
 			ReinforcementType bestReinforcement = null;
 			Region bestReinforcementRegion = null;
