@@ -127,26 +127,6 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns likelihood that attacking region could defeat defending region.
-	 * (+: attacker more likely to win, -: defender more likely to win)
-	 * @param attackingRegion
-	 * @param defendingRegion
-	 * @return
-	 */
-	public static float calculateBattleLikelihood(Region attackingRegion, Region defendingRegion) {
-		if (attackingRegion.unit == null) {
-			return -1;
-		}
-		if (defendingRegion.unit == null) {
-			return 1;
-		}
-		
-		float[] battleDamage = BattleUtils.calculateBattleDamage(attackingRegion, defendingRegion, 0);
-		
-		return battleDamage[0] / defendingRegion.unit.health - battleDamage[1] / attackingRegion.unit.health;
-	}
-	
-	/**
 	 * Returns strength of region against neighbors.
 	 * (sum of neighboring regions attack strength over region unit health). 
 	 * @param region
@@ -159,16 +139,18 @@ public class RegionUtils {
 		}
 		
 		float result = 0;
+		int numAttacks = 0;
 		
 		for (Neighbor neighbor : region.neighbors) {
 			// check if region can be attacked
 			if (RegionUtils.canAttack(region, neighbor)) {
 				// sum the difference in attacking region damage and defending region damage
-				result += calculateBattleLikelihood(region, neighbor.region);
+				result += BattleUtils.calculateBattleLikelihood(region, neighbor.region);
+				numAttacks++;
 			}
 		}
 		
-		return result / region.unit.health;
+		return result / numAttacks;
 	}
 	
 	/**
@@ -248,12 +230,12 @@ public class RegionUtils {
 	}
 	
 	/**
-	 * Returns strength of region.
+	 * Returns strength of region (1 + region health).
 	 * @param region
 	 * @return
 	 */
 	public static float getRegionStrength(Region region) {
-		return region.unit != null ? region.unit.health : 0; 
+		return region.unit != null ? 1 + region.unit.health : 1; 
 	}
 	
 	/**

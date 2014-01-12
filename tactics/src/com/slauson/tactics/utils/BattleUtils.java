@@ -96,6 +96,27 @@ public class BattleUtils {
 	}
 	
 	/**
+	 * Returns likelihood that attacking region could defeat defending region.
+	 * (1: attacker more likely to win, -: defender more likely to win)
+	 * @param attackingRegion
+	 * @param defendingRegion
+	 * @return
+	 */
+	public static float calculateBattleLikelihood(Region attackingRegion, Region defendingRegion) {
+		if (attackingRegion.unit == null) {
+			return -1;
+		}
+		if (defendingRegion.unit == null) {
+			return 1;
+		}
+		
+		float[] battleDamage = BattleUtils.calculateBattleDamage(attackingRegion, defendingRegion, 0);
+		
+		return (battleDamage[0] / defendingRegion.unit.health - battleDamage[1] / attackingRegion.unit.health)
+				/ (battleDamage[0] / defendingRegion.unit.health + battleDamage[1] / attackingRegion.unit.health);
+	}
+	
+	/**
 	 * Handles battle between two regions.
 	 * @param attackingRegion
 	 * @param defendingRegion

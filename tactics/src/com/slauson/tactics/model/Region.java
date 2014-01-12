@@ -12,6 +12,8 @@ public class Region {
 	
 	public Player player;
 	
+	public Island island;
+	
 	public Unit unit;
 	
 	public Vector2 position;
@@ -21,7 +23,12 @@ public class Region {
 	public boolean marked;
 	
 	public Region(Vector2 position) {
+		this(position, null);
+	}
+	
+	public Region(Vector2 position, Island island) {
 		this.position = position;
+		this.island = island;
 		
 		bounds = new Rectangle();
 		bounds.x = position.x;

@@ -112,7 +112,7 @@ public class IslandBuilder {
 		// construct regions
 		for (int column = islandRegionOffsetStartX; column <= islandRegionOffsetEndX; column++) {
 			for (int row = islandRegionOffsetStartY; row <= islandRegionOffsetEndY; row++) {
-				regionsArray[column][row] = new Region(new Vector2(column, row));
+				regionsArray[column][row] = new Region(new Vector2(column, row), island);
 				island.regions.add(regionsArray[column][row]);
 			}
 		}

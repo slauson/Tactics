@@ -1,5 +1,6 @@
 package com.slauson.tactics.ai;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +26,197 @@ public abstract class AI {
 	public abstract Move getNextMove(Overworld overworld, Player player);
 	
 	/**
+	 * Factors that go into choosing a move. 
+	 */
+	protected static class ScoreFactor {
+		
+		public static enum Type {
+			BATTLE_STRENGTH_CHANGE,
+			BATTLE_LIKELIHOOD,
+			ISLAND_STRENGTH_CHANGE,
+			ISLAND_STRENGTH,
+		}
+		
+		public float[] scores;
+		
+		public ScoreFactor() {
+			this.scores = new float[Type.values().length];
+			
+			// initialize scores
+			for (int i = 0; i < scores.length; i++) {
+				scores[i] = 0f;
+			}
+		}
+		
+		/**
+		 * Adds factor with given score to score factor.
+		 * @param type
+		 * @param score
+		 * @return
+		 */
+		public ScoreFactor addFactor(Type type, float score) {
+			scores[type.ordinal()] = score;
+			
+			return this;
+		}
+		
+		/**
+		 * Returns score for given type
+		 * @param type
+		 * @return
+		 */
+		public float getScore(Type type) {
+			return scores[type.ordinal()];
+		}
+		
+		/**
+		 * Returns true if score factor uses given type
+		 * @param type
+		 * @return
+		 */
+		public boolean usesType(Type type) {
+			return scores[type.ordinal()] > 0;
+		}
+	}
+	
+	/**
+	 * Returns list of moves for given score factor
+	 * @param overworld
+	 * @param player
+	 * @param minScore
+	 * @param scoreFactor
+	 * @return
+	 */
+	protected static List<Move> getMoves(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+		List<Move> moves = new ArrayList<Move>();
+		
+		// go through each region
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player) && region.unit != null && region.unit.hasMove) {
+				
+				// go through each neighbor
+				for (Neighbor neighbor : region.neighbors) {
+					if (RegionUtils.canMove(region, neighbor)) {
+						float score = 0;
+						
+						// battle strength
+						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
+							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
+									getBattleStrengthChange(region, neighbor);
+						}
+						
+						// island strength
+						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) || scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+							score += getIslandStrengthChange(region, neighbor, player, scoreFactor);
+						}
+						
+						if (score >= minScore) {
+							moves.add(new Move(Move.Type.MOVE, region, neighbor.region));
+						}
+					}
+				}
+			}
+		}
+		
+		return moves;
+	}
+	
+	/**
+	 * Returns list of attacks for given score factor
+	 * @param overworld
+	 * @param player
+	 * @param minScore
+	 * @param scoreFactor
+	 * @return
+	 */
+	protected static List<Move> getAttacks(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+		
+		List<Move> attacks = new ArrayList<Move>();
+		
+		// go through each region
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player) && region.unit != null && region.unit.hasAttack) {
+				
+				// check each neighbor
+				for (Neighbor neighbor : region.neighbors) {
+					if (RegionUtils.canAttack(region, neighbor)) {
+						float score = 0;
+						
+						// battle strength
+						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
+							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
+									getBattleStrengthChange(region, neighbor);
+						}
+						
+						// island strength
+						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) || scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+							score += getIslandStrengthChange(region, neighbor, player, scoreFactor);
+						}
+						
+						// battle likelihood
+						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_LIKELIHOOD)) {
+							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_LIKELIHOOD) *
+									BattleUtils.calculateBattleLikelihood(region, neighbor.region);
+						}
+						
+						if (score >= minScore) {
+							attacks.add(new Move(Move.Type.ATTACK, region, neighbor.region));
+						}
+					}
+				}
+			}
+		}
+		
+		return attacks;
+	}
+	
+	/**
+	 * Returns list of reinforcements for given score factor
+	 * @param overworld
+	 * @param player
+	 * @param minScore
+	 * @param scoreFactor
+	 * @return
+	 */
+	protected static List<Move> getReinforcements(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+		
+		List<Move> reinforcements = new ArrayList<Move>();
+		
+		// go through each region
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player) && (region.unit == null || region.unit.health < Unit.MAX_HEALTH)) {
+				
+				ReinforcementType reinforcementType = getBestReinforcement(region);
+				
+				float score = 0;
+				
+				// battle strength
+				if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
+					score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
+							reinforcementType.strengthChange;
+				}
+				
+				// island strength
+				if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) || scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+					score += getIslandStrengthChange(region, reinforcementType, player, scoreFactor);
+				}
+				
+				if (score >= minScore) {
+					reinforcements.add(new Move(Move.Type.REINFORCE, region, null, reinforcementType.unitType));
+				}
+			}
+		}
+		
+		return reinforcements;
+	}
+
+	
+	/**
 	 * Returns changes in region strengths for each possible move.
 	 * @param region
 	 * @return
 	 */
-	public static Map<Neighbor, Float> checkMoves(Region region) {
+	protected static Map<Neighbor, Float> checkMoves(Region region) {
 		Map<Neighbor, Float> result = new HashMap<Neighbor, Float>();
 		
 		for (Neighbor neighbor : region.neighbors) {
@@ -63,7 +250,7 @@ public abstract class AI {
 	 * @param region
 	 * @return
 	 */
-	public static Map<Region, Float> checkAttacks(Region region) {
+	protected static Map<Region, Float> checkAttacks(Region region) {
 		Map<Region, Float> result = new HashMap<Region, Float>();
 		
 		for (Neighbor neighbor : region.neighbors) {
@@ -77,7 +264,7 @@ public abstract class AI {
 		return result;
 	}
 	
-	public static class ReinforcementType {
+	protected static class ReinforcementType {
 		public float strengthChange = -1;
 		public Unit.Type unitType = null;
 	}
@@ -86,7 +273,7 @@ public abstract class AI {
 	 * Returns change in battle strength for player regions
 	 * @return
 	 */
-	public static Map<Region, ReinforcementType> checkReinforcements(Overworld overworld, Player player) {
+	protected static Map<Region, ReinforcementType> checkReinforcements(Overworld overworld, Player player) {
 		
 		Map<Region, ReinforcementType> result = new HashMap<Region, ReinforcementType>(); 
 		
@@ -104,7 +291,7 @@ public abstract class AI {
 	 * @param region
 	 * @return
 	 */
-	public static ReinforcementType getBestReinforcement(Region region) {
+	protected static ReinforcementType getBestReinforcement(Region region) {
 		
 		ReinforcementType result = new ReinforcementType();
 		
@@ -264,6 +451,147 @@ public abstract class AI {
 		}
 		
 		return new Move(Move.Type.END_PHASE);
+	}
+	
+	/**
+	 * Returns change in battle strength if unit at region switches places with neighbor. 
+	 * @param region
+	 * @param neighbor
+	 * @return
+	 */
+	private static float getBattleStrengthChange(Region region, Neighbor neighbor) {
+		// get current strengths of region, neighbor
+		float regionStrength = RegionUtils.getRegionBattleStrength(region);
+		float neighborStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
+		
+		// swap units, see change in strengths
+		Unit temp = region.unit;
+		region.unit = neighbor.region.unit;
+		neighbor.region.unit = temp;
+		float regionMoveStrength = RegionUtils.getRegionBattleStrength(region);
+		float neighborMoveStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
+		
+		// put units back
+		temp = region.unit;
+		region.unit = neighbor.region.unit;
+		neighbor.region.unit = temp;
+		
+		return (regionMoveStrength + neighborMoveStrength - regionStrength - neighborStrength) / 4;
+	}
+	
+	/**
+	 * Returns change in island strengths if unit  at region switches place with neighbor.
+	 * @param region
+	 * @param neighbor
+	 * @param player
+	 * @param scoreFactor
+	 * @return
+	 */
+	private static float getIslandStrengthChange(Region region, Neighbor neighbor, Player player, ScoreFactor scoreFactor) {
+		
+		float score = 0f;
+		
+		float regionIslandStrength = RegionUtils.getIslandStrength(region.island, player);
+		
+		// same island
+		if (region.island.equals(neighbor.region.island)) {
+			// swap units, see change in island strength
+			Unit temp = region.unit;
+			region.unit = neighbor.region.unit;
+			neighbor.region.unit = temp;
+			
+			float regionIslandMoveStrength = RegionUtils.getIslandStrength(region.island, player);
+			
+			// put units back
+			temp = region.unit;
+			region.unit = neighbor.region.unit;
+			neighbor.region.unit = temp;
+
+			if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
+				score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
+						(regionIslandMoveStrength - regionIslandStrength);
+			}
+			
+			if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+				score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH) *
+						regionIslandMoveStrength * (regionIslandMoveStrength - regionIslandStrength);
+			}
+		}
+		// different island
+		else {
+			float neighborIslandStrength = RegionUtils.getIslandStrength(neighbor.region.island, player);
+
+			// swap units, see change in island strength
+			Unit temp = region.unit;
+			region.unit = neighbor.region.unit;
+			neighbor.region.unit = temp;
+			
+			float regionIslandMoveStrength = RegionUtils.getIslandStrength(region.island, player);
+			float neighborIslandMoveStrength = RegionUtils.getIslandStrength(neighbor.region.island, player);
+
+			// put units back
+			temp = region.unit;
+			region.unit = neighbor.region.unit;
+			neighbor.region.unit = temp;
+			
+			if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
+				score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
+						((regionIslandMoveStrength - regionIslandStrength) + (neighborIslandMoveStrength - neighborIslandStrength)) / 2;
+			}
+			
+			if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+				score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH) *
+						((regionIslandMoveStrength * (regionIslandMoveStrength - regionIslandStrength)
+						+ neighborIslandMoveStrength * (neighborIslandMoveStrength - neighborIslandStrength)) / 2);
+			}
+		}
+		
+		return score;
+	}
+	
+	/**
+	 * Returns change in island strength for given reinforcement
+	 * @param region
+	 * @param reinforcementType
+	 * @param player
+	 * @param scoreFactor
+	 * @return
+	 */
+	private static float getIslandStrengthChange(Region region, ReinforcementType reinforcementType, Player player, ScoreFactor scoreFactor) {
+		
+		float score = 0f;
+		
+		float regionUnitHealth = -1f;
+		float regionIslandStrength = RegionUtils.getIslandStrength(region.island, player);
+		
+		// add reinforcement, see change in island strength
+		if (reinforcementType.unitType != null) {
+			region.unit = new Unit(reinforcementType.unitType, Unit.MAX_HEALTH);
+		} else {
+			regionUnitHealth = region.unit.health;
+			region.unit.health = Unit.MAX_HEALTH;
+		}
+		
+		float regionIslandReinforcementStrength = RegionUtils.getIslandStrength(region.island, player);
+		
+		// remove reinforcement
+		if (reinforcementType.unitType != null) {
+			region.unit = null;
+		} else {
+			region.unit.health = regionUnitHealth;
+		}
+
+		if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
+			score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
+					(regionIslandReinforcementStrength - regionIslandStrength);
+		}
+		
+		if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
+			score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH) *
+					regionIslandReinforcementStrength * (regionIslandReinforcementStrength - regionIslandStrength);
+		}
+		
+		return score;
 	}
 	
 }
