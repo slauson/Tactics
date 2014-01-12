@@ -15,4 +15,9 @@ public class Island {
 		
 		regions = new ArrayList<Region>(width * height);
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%dx%d", width, height);
+	}
 }

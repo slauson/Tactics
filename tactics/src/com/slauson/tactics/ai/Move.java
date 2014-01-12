@@ -1,7 +1,8 @@
 package com.slauson.tactics.ai;
 
 import com.slauson.tactics.model.Region;
-import com.slauson.tactics.model.Unit.UnitType;
+import com.slauson.tactics.model.Unit;
+import com.slauson.tactics.model.Unit.Type;
 
 /**
  * A type of move to make.
@@ -21,7 +22,7 @@ public class Move {
 	public Type type;
 	public Region region;
 	public Region otherRegion;
-	public UnitType unitType;
+	public Unit.Type unitType;
 	public int numPhases;
 	
 	public Move(Type type) {
@@ -32,7 +33,7 @@ public class Move {
 		this(type, region, null, null);
 	}
 	
-	public Move(Type type, Region region, UnitType unitType) {
+	public Move(Type type, Region region, Unit.Type unitType) {
 		this(type, region, null, unitType);
 	}
 	
@@ -40,7 +41,7 @@ public class Move {
 		this(type, region, otherRegion, null);
 	}
 	
-	public Move(Type type, Region region, Region otherRegion, UnitType unitType) {
+	public Move(Move.Type type, Region region, Region otherRegion, Unit.Type unitType) {
 		this.type = type;
 		this.region = region;
 		this.otherRegion = otherRegion;

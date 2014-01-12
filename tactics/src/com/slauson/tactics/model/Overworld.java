@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.badlogic.gdx.math.Vector2;
-import com.slauson.tactics.model.Neighbor.NeighborType;
+import com.slauson.tactics.model.Neighbor.Type;
 import com.slauson.tactics.utils.Utils;
 
 /**
@@ -222,27 +222,27 @@ public class Overworld {
 							&& regionsArray[column - 1][row] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column - 1][row],
-								NeighborType.DIRECT);
+								Type.DIRECT);
 					}
 					// up
 					if (row + 1 < regionsArray[column].length
 							&& regionsArray[column][row + 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column][row + 1],
-								NeighborType.DIRECT);
+								Type.DIRECT);
 					}
 					// right
 					if (column + 1 < regionsArray.length
 							&& regionsArray[column + 1][row] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column + 1][row],
-								NeighborType.DIRECT);
+								Type.DIRECT);
 					}
 					// down
 					if (row - 1 >= 0 && regionsArray[column][row - 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column][row - 1],
-								NeighborType.DIRECT);
+								Type.DIRECT);
 					}
 
 					// ranged neighbors
@@ -252,11 +252,11 @@ public class Overworld {
 						if (regionsArray[column - 1][row] == null) {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column - 2][row],
-									NeighborType.RANGED_INTER_ISLAND);
+									Type.RANGED_INTER_ISLAND);
 						} else {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column - 2][row],
-									NeighborType.RANGED);
+									Type.RANGED);
 						}
 					}
 					// up
@@ -265,11 +265,11 @@ public class Overworld {
 						if (regionsArray[column][row + 1] == null) {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column][row + 2],
-									NeighborType.RANGED_INTER_ISLAND);
+									Type.RANGED_INTER_ISLAND);
 						} else {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column][row + 2],
-									NeighborType.RANGED);
+									Type.RANGED);
 						}
 					}
 					// right
@@ -278,11 +278,11 @@ public class Overworld {
 						if (regionsArray[column + 1][row] == null) {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column + 2][row],
-									NeighborType.RANGED_INTER_ISLAND);
+									Type.RANGED_INTER_ISLAND);
 						} else {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column + 2][row],
-									NeighborType.RANGED);
+									Type.RANGED);
 						}
 					}
 					// down
@@ -290,11 +290,11 @@ public class Overworld {
 						if (regionsArray[column][row - 1] == null) {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column][row - 2],
-									NeighborType.RANGED_INTER_ISLAND);
+									Type.RANGED_INTER_ISLAND);
 						} else {
 							regionsArray[column][row].neighbors.add(
 									regionsArray[column][row - 2],
-									NeighborType.RANGED);
+									Type.RANGED);
 						}
 					}
 
@@ -304,7 +304,7 @@ public class Overworld {
 							&& regionsArray[column - 1][row + 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column - 1][row + 1],
-								NeighborType.RANGED);
+								Type.RANGED);
 					}
 					// up right
 					if (column + 1 < regionsArray.length
@@ -312,21 +312,21 @@ public class Overworld {
 							&& regionsArray[column + 1][row + 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column + 1][row + 1],
-								NeighborType.RANGED);
+								Type.RANGED);
 					}
 					// down left
 					if (column - 1 >= 0 && row - 1 >= 0
 							&& regionsArray[column - 1][row - 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column - 1][row - 1],
-								NeighborType.RANGED);
+								Type.RANGED);
 					}
 					// down right
 					if (column + 1 < regionsArray.length && row - 1 >= 0
 							&& regionsArray[column + 1][row - 1] != null) {
 						regionsArray[column][row].neighbors.add(
 								regionsArray[column + 1][row - 1],
-								NeighborType.RANGED);
+								Type.RANGED);
 					}
 				}
 			}

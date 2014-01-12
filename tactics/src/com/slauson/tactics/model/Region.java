@@ -47,7 +47,7 @@ public class Region {
 	}
 	
 	private void testRegion() {
-		int typeIndex = Utils.random().nextInt(Unit.UnitType.values().length);
-		unit = new Unit(Unit.UnitType.values()[typeIndex], Utils.random().nextInt((int)Unit.MAX_HEALTH));
+		int typeIndex = Utils.random().nextInt(Unit.Type.values().length);
+		unit = new Unit(Unit.Type.values()[typeIndex], Utils.random().nextInt((int)Unit.MAX_HEALTH));
 	}
 }

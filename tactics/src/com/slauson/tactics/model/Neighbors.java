@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.badlogic.gdx.math.Vector2;
-import com.slauson.tactics.model.Neighbor.NeighborType;
+import com.slauson.tactics.model.Neighbor.Type;
 
 /**
  * "List" of neighbors with different types.
@@ -25,7 +25,7 @@ public class Neighbors implements Iterable<Neighbor> {
 	 * @param region
 	 * @param type
 	 */
-	public void add(Region region, NeighborType type) {
+	public void add(Region region, Type type) {
 		neighbors.add(new Neighbor(region, type));
 	}
 	
@@ -43,7 +43,7 @@ public class Neighbors implements Iterable<Neighbor> {
 	 * @param region
 	 * @return
 	 */
-	public NeighborType getNeighborType(Region region) {
+	public Type getNeighborType(Region region) {
 		for (Neighbor neighbor : neighbors) {
 			if (neighbor.region == region) {
 				return neighbor.type;
@@ -74,20 +74,20 @@ public class Neighbors implements Iterable<Neighbor> {
 		
 		Neighbors neighbors = new Neighbors();
 		
-		neighbors.add(region1, NeighborType.DIRECT);
-		neighbors.add(region2, NeighborType.DIRECT);
-		neighbors.add(region3, NeighborType.DIRECT);
-		neighbors.add(region4, NeighborType.DIRECT);
+		neighbors.add(region1, Type.DIRECT);
+		neighbors.add(region2, Type.DIRECT);
+		neighbors.add(region3, Type.DIRECT);
+		neighbors.add(region4, Type.DIRECT);
 		
-		neighbors.add(region5, NeighborType.RANGED);
-		neighbors.add(region6, NeighborType.RANGED);
-		neighbors.add(region7, NeighborType.RANGED);
-		neighbors.add(region8, NeighborType.RANGED);
+		neighbors.add(region5, Type.RANGED);
+		neighbors.add(region6, Type.RANGED);
+		neighbors.add(region7, Type.RANGED);
+		neighbors.add(region8, Type.RANGED);
 		
-		neighbors.add(region9, NeighborType.RANGED_INTER_ISLAND);
-		neighbors.add(region10, NeighborType.RANGED_INTER_ISLAND);
-		neighbors.add(region11, NeighborType.RANGED_INTER_ISLAND);
-		neighbors.add(region12, NeighborType.RANGED_INTER_ISLAND);
+		neighbors.add(region9, Type.RANGED_INTER_ISLAND);
+		neighbors.add(region10, Type.RANGED_INTER_ISLAND);
+		neighbors.add(region11, Type.RANGED_INTER_ISLAND);
+		neighbors.add(region12, Type.RANGED_INTER_ISLAND);
 		
 		System.out.println("All neighbors");
 		for (Neighbor neighbor : neighbors) {

@@ -2,7 +2,7 @@ package com.slauson.tactics.model;
 
 public class Neighbor {
 
-	public enum NeighborType {
+	public enum Type {
 		DIRECT, RANGED, RANGED_INTER_ISLAND;
 		
 		public boolean isRanged() {
@@ -15,9 +15,9 @@ public class Neighbor {
 	}
 	
 	public final Region region;
-	public final NeighborType type;
+	public final Type type;
 	
-	public Neighbor(Region region, NeighborType type) {
+	public Neighbor(Region region, Type type) {
 		this.region = region;
 		this.type = type;
 	}

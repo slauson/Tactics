@@ -11,7 +11,7 @@ public class Unit {
 	 * Triangle > circle
 	 * Circle > square
 	 */
-	public enum UnitType {
+	public enum Type {
 		/* Strong against square, weak against triangle */
 		CIRCLE, RANGED_CIRCLE,
 		/* Strong against triangle, weak against circle */
@@ -24,14 +24,14 @@ public class Unit {
 		 * @return
 		 */
 		public boolean isRanged() {
-			return this == UnitType.RANGED_CIRCLE || this == UnitType.RANGED_SQUARE || this == UnitType.RANGED_TRIANGLE;
+			return this == Type.RANGED_CIRCLE || this == Type.RANGED_SQUARE || this == Type.RANGED_TRIANGLE;
 		}
 		
 		/**
 		 * Returns next unit type.
 		 * @return
 		 */
-		public UnitType next() {
+		public Type next() {
 			switch (this) {
 			default:
 			case CIRCLE:
@@ -50,13 +50,13 @@ public class Unit {
 		}
 	}
 	
-	public UnitType type;
+	public Type type;
 	
 	public float health;
 	public boolean hasMove;
 	public boolean hasAttack;
 	
-	public Unit(UnitType type, float health) {
+	public Unit(Type type, float health) {
 		this.type = type;
 		this.health = health;
 		

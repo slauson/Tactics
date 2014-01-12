@@ -133,7 +133,7 @@ public abstract class AI {
 		
 		// reinforce new region
 		if (regions.get(regionIndex).unit == null) {
-			return new Move(Move.Type.REINFORCE, regions.get(regionIndex), Unit.UnitType.values()[Utils.random().nextInt(Unit.UnitType.values().length)]);
+			return new Move(Move.Type.REINFORCE, regions.get(regionIndex), Unit.Type.values()[Utils.random().nextInt(Unit.Type.values().length)]);
 		}
 		// reinforce existing region
 		else if (!onlyNew && regions.get(regionIndex).unit.health < Unit.MAX_HEALTH) {

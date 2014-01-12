@@ -1,13 +1,12 @@
 package com.slauson.tactics.controller;
 
 import com.slauson.tactics.ai.Move;
-import com.slauson.tactics.model.Neighbor.NeighborType;
+import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
-import com.slauson.tactics.model.Unit.UnitType;
 import com.slauson.tactics.utils.BattleUtils;
 import com.slauson.tactics.utils.PlayerUtils;
 import com.slauson.tactics.utils.RegionUtils;
@@ -26,6 +25,7 @@ public class OverworldController extends Controller {
 	
 	private Move currentMove;
 	private float currentMoveTime;
+	private boolean paused;
 	
 	public OverworldController(Overworld overworld) {
 		this.overworld = overworld;
@@ -33,6 +33,7 @@ public class OverworldController extends Controller {
 		selectedRegion = null;
 		currentMove = new Move(Move.Type.DUMMY);
 		currentMoveTime = 0;
+		paused = false;
 	}
 	
 	@Override
@@ -41,7 +42,7 @@ public class OverworldController extends Controller {
 			delta = MAX_DELTA;
 		}
 
-		if (overworld.activePlayer().type != Player.Type.PLAYER) {
+		if (!paused && overworld.activePlayer().type != Player.Type.PLAYER) {
 			handleMove(delta);
 		}
 	}
@@ -79,7 +80,7 @@ public class OverworldController extends Controller {
 					}
 					
 					// region is in selected region's neighbors
-					NeighborType neighborType = selectedRegion.neighbors.getNeighborType(region);
+					Neighbor.Type neighborType = selectedRegion.neighbors.getNeighborType(region);
 					if (neighborType != null) {
 						
 						// attack
@@ -101,7 +102,7 @@ public class OverworldController extends Controller {
 							return true;
 						}
 						// move (unoccupied region)
-						else if (selectedRegion.unit.hasMove && region.unit == null && neighborType != NeighborType.RANGED) {
+						else if (selectedRegion.unit.hasMove && region.unit == null && neighborType != Neighbor.Type.RANGED) {
 							// update region count if not owned by player
 							if (region.player != selectedRegion.player) { 
 								selectedRegion.player.regions++;
@@ -124,7 +125,7 @@ public class OverworldController extends Controller {
 							return true;
 						}
 						// move (player owned region)
-						else if (selectedRegion.unit.hasMove && selectedRegion.player == region.player && region.unit != null&& region.unit.hasMove && neighborType != NeighborType.RANGED) {
+						else if (selectedRegion.unit.hasMove && selectedRegion.player == region.player && region.unit != null&& region.unit.hasMove && neighborType != Neighbor.Type.RANGED) {
 							// swap units
 							Unit temp = region.unit;
 							region.unit = selectedRegion.unit;
@@ -188,7 +189,7 @@ public class OverworldController extends Controller {
 							selectedRegion.selected = false;
 						}
 						
-						region.unit = new Unit(UnitType.values()[0], Unit.MAX_HEALTH);
+						region.unit = new Unit(Unit.Type.values()[0], Unit.MAX_HEALTH);
 						selectedRegion = region;
 						selectedRegion.selected = true;
 						overworld.activePlayer().reinforcements--;
@@ -227,6 +228,9 @@ public class OverworldController extends Controller {
 				
 				return true;
 			}
+		case 'p':
+			paused = !paused;
+			break;
 		}
 		
 		return false;
