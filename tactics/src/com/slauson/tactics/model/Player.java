@@ -2,6 +2,7 @@ package com.slauson.tactics.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.slauson.tactics.ai.AI;
+import com.slauson.tactics.ai.AdvancedAI;
 import com.slauson.tactics.ai.RandomAI;
 import com.slauson.tactics.ai.SimpleAI;
 
@@ -11,7 +12,7 @@ public class Player {
 	public static int NUM_REINFORCEMENTS_PER_ISLAND = 1;
 	
 	public enum Type {
-		PLAYER, AI_RANDOM, SIMPLE
+		PLAYER, RANDOM, SIMPLE, ADVANCED
 	}
 	
 	public int id;
@@ -33,11 +34,14 @@ public class Player {
 		this.type = type;
 
 		switch (type) {
-		case AI_RANDOM:
+		case RANDOM:
 			ai = new RandomAI();
 			break;
 		case SIMPLE:
 			ai = new SimpleAI();
+			break;
+		case ADVANCED:
+			ai = new AdvancedAI();
 			break;
 		default:
 			ai = null;

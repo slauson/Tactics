@@ -8,7 +8,6 @@ import com.slauson.tactics.model.IslandLayout;
 import com.slauson.tactics.model.IslandLayout.Direction;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
-import com.slauson.tactics.model.Player.Type;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.builder.IslandBuilder.EdgeType;
 import com.slauson.tactics.utils.Utils;
@@ -96,9 +95,9 @@ public class OverworldBuilder {
 		List<Player> players = new ArrayList<Player>(numPlayers);
 		
 		// player always controls first player
-		players.add(new Player(0, Type.PLAYER));
+		players.add(new Player(0, Player.Type.ADVANCED));
 		for (int i = 1; i < numPlayers; i++) {
-			players.add(new Player(i, Type.SIMPLE));
+			players.add(new Player(i, Player.Type.ADVANCED));
 		}
 		
 		return new Overworld(width, height, regionsArray, islands, players);
@@ -219,9 +218,9 @@ public class OverworldBuilder {
 		List<Player> players = new ArrayList<Player>(numPlayers);
 		
 		// player always controls first player
-		players.add(new Player(0, Type.PLAYER));
+		players.add(new Player(0, Player.Type.PLAYER));
 		for (int i = 1; i < numPlayers; i++) {
-			players.add(new Player(i, Type.AI_RANDOM));
+			players.add(new Player(i, Player.Type.ADVANCED));
 		}
 		
 		return new Overworld(width, height, regionsArray, islands, players);

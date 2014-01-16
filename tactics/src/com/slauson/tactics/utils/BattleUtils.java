@@ -89,7 +89,7 @@ public class BattleUtils {
 		if ((attackingRegion.unit.type.isRanged() && !defendingRegion.unit.type.isRanged()) ||
 				defendingRegion.unit.type.isRanged() && !attackingRegion.unit.type.isRanged())
 		{
-			result[1] = Float.MIN_VALUE; // use min value instead of 0 to allow division below
+			result[1] = 0;
 		}
 		
 		return result;
@@ -97,7 +97,7 @@ public class BattleUtils {
 	
 	/**
 	 * Returns likelihood that attacking region could defeat defending region.
-	 * (1: attacker more likely to win, -: defender more likely to win)
+	 * (1: attacker more likely to win, 0: defender more likely to win)
 	 * @param attackingRegion
 	 * @param defendingRegion
 	 * @return
@@ -112,8 +112,10 @@ public class BattleUtils {
 		
 		float[] battleDamage = BattleUtils.calculateBattleDamage(attackingRegion, defendingRegion, 0);
 		
-		return (battleDamage[0] / defendingRegion.unit.health - battleDamage[1] / attackingRegion.unit.health)
-				/ (battleDamage[0] / defendingRegion.unit.health + battleDamage[1] / attackingRegion.unit.health);
+		// ((attacker damage - defender damage) / total damage + 1) / 2 
+		return ((battleDamage[0] / defendingRegion.unit.health - battleDamage[1] / attackingRegion.unit.health)
+				/ (battleDamage[0] / defendingRegion.unit.health + battleDamage[1] / attackingRegion.unit.health)
+				+ 1) / 2;
 	}
 	
 	/**
@@ -124,7 +126,7 @@ public class BattleUtils {
 	 */
 	public static Region handleBattle(Region attackingRegion, Region defendingRegion) {
 		
-		System.out.println("handleBattle (" + attackingRegion + ") vs (" + defendingRegion + ")");
+		//System.out.println("handleBattle (" + attackingRegion + ") vs (" + defendingRegion + ")");
 		
 		// only allow a single attack
 		attackingRegion.unit.hasAttack = false;
@@ -138,7 +140,7 @@ public class BattleUtils {
 		attackingRegion.unit.health -= defenderAttackDamage;
 		defendingRegion.unit.health -= attackerAttackDamage;
 		
-		System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
+		//System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
 		
 		// special case of both units defeated
 		if (defendingRegion.unit.health <= 0 && attackingRegion.unit.health <= 0) {

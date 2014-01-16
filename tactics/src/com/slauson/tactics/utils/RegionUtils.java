@@ -128,7 +128,8 @@ public class RegionUtils {
 	
 	/**
 	 * Returns strength of region against neighbors.
-	 * (sum of neighboring regions attack strength over region unit health). 
+	 * (sum of neighboring regions attack strength over region unit health).
+	 * 0 to 1
 	 * @param region
 	 * @return
 	 */
