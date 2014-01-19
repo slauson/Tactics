@@ -79,6 +79,22 @@ public abstract class AI {
 		public boolean usesType(Type type) {
 			return scores[type.ordinal()] > 0;
 		}
+		
+		@Override
+		public String toString() {
+			StringBuilder builder = new StringBuilder();
+			
+			for (Type type : Type.values()) {
+				if (scores[type.ordinal()] > 0) {
+					if (builder.length() > 0) {
+						builder.append(", ");
+					}
+					builder.append(String.format("%s: %f", type.name(), scores[type.ordinal()]));
+				}
+			}
+			
+			return builder.toString();
+		}
 	}
 	
 	/**
@@ -86,11 +102,11 @@ public abstract class AI {
 	 * ordered by descending score.
 	 * @param overworld
 	 * @param player
-	 * @param minScore
+	 * @param scoreThreshold
 	 * @param scoreFactor
 	 * @return
 	 */
-	protected static Collection<Move> getMoves(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+	protected static Collection<Move> getMoves(Overworld overworld, Player player, ScoreFactor scoreThreshold, ScoreFactor scoreFactor) {
 		
 		Map<Float, Move> moves = new TreeMap<Float, Move>();
 		
@@ -101,39 +117,47 @@ public abstract class AI {
 				// go through each neighbor
 				for (Neighbor neighbor : region.neighbors) {
 					if (RegionUtils.canMove(region, neighbor)) {
-						float score = 0;
-						StringBuilder builder = new StringBuilder();
 
-						// battle strength
-						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
-							builder.append("\t\tbattle strength change: " + getBattleStrengthChange(region, neighbor, true) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
-									getBattleStrengthChange(region, neighbor, true);
+						ScoreFactor score = new ScoreFactor();
+						float scoreValue = 0;
+						boolean aboveThreshold = true;
+						
+						// get each score type
+						for (ScoreFactor.Type type : ScoreFactor.Type.values()) {
+							if (scoreThreshold.usesType(type) || scoreFactor.usesType(type)) {
+								switch (type) {
+								case BATTLE_STRENGTH_CHANGE:
+									score.addFactor(type, getBattleStrengthChange(region, neighbor, true));
+									break;
+								case ISLAND_STRENGTH:
+									score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
+									break;
+								case RANDOM:
+									score.addFactor(type, Utils.random().nextFloat());
+									break;
+								case BATTLE_LIKELIHOOD:
+								case ISLAND_STRENGTH_CHANGE:
+									// ignore
+									break;
+								}
+								
+								// check if score meets threshold
+								if (scoreThreshold.usesType(type)) {
+									aboveThreshold &= score.getScore(type) >= scoreThreshold.getScore(type);
+								}
+								
+								// update score value
+								if (scoreFactor.usesType(type)) {
+									scoreValue += score.getScore(type) * scoreFactor.getScore(type);
+								}
+							}
 						}
 						
-						// island strength
-						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
-							builder.append("\t\tisland strength: " + RegionUtils.getIslandStrength(region.island, player) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH) *
-									RegionUtils.getIslandStrength(region.island, player);
-						}
-						
-						// island strength change
-						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
-							builder.append("\t\tisland strength change: " + getIslandStrengthChange(region, neighbor, player) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
-									getIslandStrengthChange(region, neighbor, player);
-						}
-						
-						// random
-						if (scoreFactor.usesType(ScoreFactor.Type.RANDOM)) {
-							score += scoreFactor.getScore(ScoreFactor.Type.RANDOM) * Utils.random().nextFloat();
-						}
-						
-						if (score >= minScore) {
-							moves.put(score, new Move(Move.Type.MOVE, region, neighbor.region));
-							System.out.println(String.format("\tpossible move %f: %s", score, moves.get(score)));
-							System.out.print(builder.toString());
+						// score above threshold
+						if (aboveThreshold) {
+							moves.put(scoreValue, new Move(Move.Type.MOVE, region, neighbor.region));
+							System.out.println(String.format("\tpossible move %f: %s", scoreValue, moves.get(scoreValue)));
+							System.out.println("\t\t" + score);
 						}
 					}
 				}
@@ -148,11 +172,11 @@ public abstract class AI {
 	 * ordered by descending score.
 	 * @param overworld
 	 * @param player
-	 * @param minScore
+	 * @param scoreThreshold
 	 * @param scoreFactor
 	 * @return
 	 */
-	protected static Collection<Move> getAttacks(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+	protected static Collection<Move> getAttacks(Overworld overworld, Player player, ScoreFactor scoreThreshold, ScoreFactor scoreFactor) {
 		
 		Map<Float, Move> attacks = new TreeMap<Float, Move>();
 		
@@ -163,46 +187,51 @@ public abstract class AI {
 				// check each neighbor
 				for (Neighbor neighbor : region.neighbors) {
 					if (RegionUtils.canAttack(region, neighbor)) {
-						float score = 0;
-						StringBuilder builder = new StringBuilder();
-
-						// battle strength
-						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
-							builder.append("\t\tbattle strength change: " + getBattleStrengthChange(region, neighbor, false) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
-									getBattleStrengthChange(region, neighbor, false);
+						
+						ScoreFactor score = new ScoreFactor();
+						float scoreValue = 0;
+						boolean aboveThreshold = true;
+						
+						// get each score type
+						for (ScoreFactor.Type type : ScoreFactor.Type.values()) {
+							if (scoreThreshold.usesType(type) || scoreFactor.usesType(type)) {
+								switch (type) {
+								case BATTLE_STRENGTH_CHANGE:
+									if (neighbor.type != Neighbor.Type.RANGED) {
+										score.addFactor(type, getBattleStrengthChange(region, neighbor, false));
+									}
+									break;
+								case BATTLE_LIKELIHOOD:
+									score.addFactor(type, BattleUtils.calculateBattleLikelihood(region, neighbor.region));
+									break;
+								case ISLAND_STRENGTH:
+									score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
+									break;
+								case RANDOM:
+									score.addFactor(type, Utils.random().nextFloat());
+									break;
+								case ISLAND_STRENGTH_CHANGE:
+									// ignore
+									break;
+								}
+								
+								// check if score meets threshold
+								if (scoreThreshold.usesType(type)) {
+									aboveThreshold &= score.getScore(type) >= scoreThreshold.getScore(type);
+								}
+								
+								// update score value
+								if (scoreFactor.usesType(type)) {
+									scoreValue += score.getScore(type) * scoreFactor.getScore(type);
+								}
+							}
 						}
 						
-						// battle likelihood
-						if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_LIKELIHOOD)) {
-							builder.append("\t\tbattle likelihood: " + BattleUtils.calculateBattleLikelihood(region, neighbor.region) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_LIKELIHOOD) *
-									BattleUtils.calculateBattleLikelihood(region, neighbor.region);
-						}
-						
-						// island strength
-						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH)) {
-							builder.append("\t\tisland strength: " + RegionUtils.getIslandStrength(region.island, player) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH) *
-									RegionUtils.getIslandStrength(region.island, player);
-						}
-						
-						// island strength change
-						if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
-							builder.append("\t\tisland strength change: " + getIslandStrengthChange(region, neighbor, player) + "\n");
-							score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
-									getIslandStrengthChange(region, neighbor, player);
-						}
-						
-						// random
-						if (scoreFactor.usesType(ScoreFactor.Type.RANDOM)) {
-							score += scoreFactor.getScore(ScoreFactor.Type.RANDOM) * Utils.random().nextFloat();
-						}
-						
-						if (score >= minScore) {
-							attacks.put(score, new Move(Move.Type.ATTACK, region, neighbor.region));
-							System.out.println(String.format("\tpossible attack %f: %s", score, attacks.get(score)));
-							System.out.print(builder.toString());
+						// score above threshold
+						if (aboveThreshold) {
+							attacks.put(scoreValue, new Move(Move.Type.ATTACK, region, neighbor.region));
+							System.out.println(String.format("\tpossible attack %f: %s", scoreValue, attacks.get(scoreValue)));
+							System.out.println("\t\t" + score);
 						}
 					}
 				}
@@ -221,7 +250,7 @@ public abstract class AI {
 	 * @param scoreFactor
 	 * @return
 	 */
-	protected static Collection<Move> getReinforcements(Overworld overworld, Player player, float minScore, ScoreFactor scoreFactor) {
+	protected static Collection<Move> getReinforcements(Overworld overworld, Player player, ScoreFactor scoreThreshold, ScoreFactor scoreFactor) {
 		
 		Map<Float, Move> reinforcements = new TreeMap<Float, Move>();
 		
@@ -229,35 +258,51 @@ public abstract class AI {
 		for (Region region : overworld.regions) {
 			if (region.player.equals(player) && (region.unit == null || region.unit.health < Unit.MAX_HEALTH)) {
 				
+				// get optimal reinforcement type for region
 				ReinforcementType reinforcementType = getBestReinforcement(region);
 				
-				float score = 0;
-				StringBuilder builder = new StringBuilder();
+				ScoreFactor score = new ScoreFactor();
+				float scoreValue = 0;
+				boolean aboveThreshold = true;
 				
-				// battle strength
-				if (scoreFactor.usesType(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE)) {
-					builder.append(String.format("\t\tbattle strength change: " + reinforcementType.strengthChange) + "\n");
-					score += scoreFactor.getScore(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE) *
-							reinforcementType.strengthChange;
+				// get each score type
+				for (ScoreFactor.Type type : ScoreFactor.Type.values()) {
+					if (scoreThreshold.usesType(type) || scoreFactor.usesType(type)) {
+						switch (type) {
+						case BATTLE_STRENGTH_CHANGE:
+							score.addFactor(type, reinforcementType.strengthChange);
+							break;
+						case ISLAND_STRENGTH:
+							score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
+							break;
+						case ISLAND_STRENGTH_CHANGE:
+							score.addFactor(type, getIslandStrengthChange(region, reinforcementType, player));
+							break;
+						case RANDOM:
+							score.addFactor(type, Utils.random().nextFloat());
+							break;
+						case BATTLE_LIKELIHOOD:
+							// ignore
+							break;
+						}
+						
+						// check if score meets threshold
+						if (scoreThreshold.usesType(type)) {
+							aboveThreshold &= score.getScore(type) >= scoreThreshold.getScore(type);
+						}
+						
+						// update score value
+						if (scoreFactor.usesType(type)) {
+							scoreValue += score.getScore(type) * scoreFactor.getScore(type);
+						}
+					}
 				}
 				
-				// island strength
-				if (scoreFactor.usesType(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE)) {
-					builder.append("\t\tisland strength: " + RegionUtils.getIslandStrength(region.island, player) + "\n");
-					score += scoreFactor.getScore(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE) *
-							getIslandStrengthChange(region, reinforcementType, player);
-				}
-				
-				// random
-				if (scoreFactor.usesType(ScoreFactor.Type.RANDOM)) {
-					score += scoreFactor.getScore(ScoreFactor.Type.RANDOM) * Utils.random().nextFloat();
-				}
-
-				
-				if (score >= minScore) {
-					reinforcements.put(score, new Move(Move.Type.REINFORCE, region, null, reinforcementType.unitType));
-					System.out.println(String.format("\tpossible reinforcement %f: %s", score, reinforcements.get(score)));
-					System.out.print(builder.toString());
+				// score above threshold
+				if (aboveThreshold) {
+					reinforcements.put(scoreValue, new Move(Move.Type.REINFORCE, region, null, reinforcementType.unitType));
+					System.out.println(String.format("\tpossible reinforcement %f: %s", scoreValue, reinforcements.get(scoreValue)));
+					System.out.println("\t\t" + score);
 				}
 			}
 		}

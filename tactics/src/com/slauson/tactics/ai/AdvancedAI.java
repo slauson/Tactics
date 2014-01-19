@@ -1,42 +1,49 @@
 package com.slauson.tactics.ai;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
-import com.slauson.tactics.utils.Utils;
 
 public class AdvancedAI extends AI {
 	
-	private static final float MIN_SCORE = 0f;
-	private static final ScoreFactor attackScoreFactor =
+	private static final ScoreFactor attackScore =
 			new ScoreFactor()
 				.addFactor(ScoreFactor.Type.BATTLE_LIKELIHOOD, 0.5f)
-				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.1f)
-				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.25f)
-				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE, 0.1f)
-				.addFactor(ScoreFactor.Type.RANDOM, 0.05f);
-	private static final ScoreFactor moveScoreFactor =
+				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.2f)
+				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.2f)
+				.addFactor(ScoreFactor.Type.RANDOM, 0.1f);
+	private static final ScoreFactor attackScoreThreshold =
+			new ScoreFactor()
+				.addFactor(ScoreFactor.Type.BATTLE_LIKELIHOOD, 0.5f);
+	
+	private static final ScoreFactor moveScore =
 			new ScoreFactor()
 				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.5f)
-				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.35f)
-				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE, 0.1f)
-				.addFactor(ScoreFactor.Type.RANDOM, 0.05f);
-	private static final ScoreFactor reinforcementScoreFactor =
+				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.4f)
+				.addFactor(ScoreFactor.Type.RANDOM, 0.1f);
+	private static final ScoreFactor moveScoreThreshold =
+			new ScoreFactor()
+				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.5f);
+	
+	private static final ScoreFactor reinforcementScore =
 			new ScoreFactor()
 				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.4f)
-				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.45f)
+				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.4f)
 				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH_CHANGE, 0.1f)
-				.addFactor(ScoreFactor.Type.RANDOM, 0.05f);
+				.addFactor(ScoreFactor.Type.RANDOM, 0.1f);
+	private static final ScoreFactor reinforcementScoreThreshold=
+			new ScoreFactor()
+				.addFactor(ScoreFactor.Type.BATTLE_STRENGTH_CHANGE, 0.5f)
+				.addFactor(ScoreFactor.Type.ISLAND_STRENGTH, 0.25f);
 
 	@Override
 	public Move getNextMove(Overworld overworld, Player player) {
 		// attack phase
 		if (overworld.phase == Overworld.Phase.ATTACK) {
 
-			Collection<Move> attacks = getAttacks(overworld, player, MIN_SCORE, attackScoreFactor);
-			Collection<Move> moves = getMoves(overworld, player, MIN_SCORE, moveScoreFactor);
+			Collection<Move> attacks = getAttacks(overworld, player, attackScoreThreshold, attackScore);
+			Collection<Move> moves = getMoves(overworld, player, moveScoreThreshold, moveScore);
 
 			if (moves.size() > 0) {
 				return moves.iterator().next();
@@ -50,10 +57,10 @@ public class AdvancedAI extends AI {
 		}
 		// reinforce phase
 		else if (player.reinforcements > 0) {
-			Move[] reinforcements = (Move[]) getReinforcements(overworld, player, MIN_SCORE, reinforcementScoreFactor).toArray();
+			Collection<Move> reinforcements = getReinforcements(overworld, player, reinforcementScoreThreshold, reinforcementScore);
 			
-			if (reinforcements.length > 0) {
-				return reinforcements[Utils.random().nextInt(reinforcements.length)];
+			if (reinforcements.size() > 0) {
+				return reinforcements.iterator().next();
 			}
 		}
 		
