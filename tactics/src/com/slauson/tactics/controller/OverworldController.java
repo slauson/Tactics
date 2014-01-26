@@ -307,6 +307,12 @@ public class OverworldController extends Controller {
 					}
 					break;
 				case MOVE:
+					
+					// takeover empty region
+					if (currentMove.otherRegion.unit == null) {
+						currentMove.otherRegion.player = currentMove.region.player;
+					}
+					
 					// swap units
 					Unit temp = currentMove.region.unit;
 					currentMove.region.unit = currentMove.otherRegion.unit;
