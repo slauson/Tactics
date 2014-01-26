@@ -136,7 +136,7 @@ public class RegionUtils {
 	public static float getRegionBattleStrength(Region region) {
 
 		if (region.unit == null) {
-			return -1;
+			return 0;
 		}
 		
 		float result = 0;
@@ -149,6 +149,10 @@ public class RegionUtils {
 				result += BattleUtils.calculateBattleLikelihood(region, neighbor.region);
 				numAttacks++;
 			}
+		}
+		
+		if (numAttacks == 0) {
+			return 0.5f;
 		}
 		
 		return result / numAttacks;
@@ -277,6 +281,27 @@ public class RegionUtils {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Returns percentage of given island owned by player.
+	 * @param island
+	 * @param player
+	 * @return
+	 */
+	public static float getIslandPercentage(Island island, Player player) {
+		
+		int numPlayerRegions = 0;
+		int numRegions = 0;
+		
+		for (Region region : island.regions) {
+			if (region.player.equals(player)) {
+				numPlayerRegions++;
+			}
+			numRegions++;
+		}
+		
+		return 1.0f * numPlayerRegions / numRegions;
 	}
 	
 	/**

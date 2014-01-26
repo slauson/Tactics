@@ -13,14 +13,14 @@ import com.slauson.tactics.view.OverworldRenderer;
  */
 public class OverworldScreen extends Screen {
 
-	private static final int NUM_PLAYERS = 4;
+	private static final int NUM_PLAYERS = 2;
 	
 	private Overworld overworld;
 	
 	public OverworldScreen(TacticsGame game) {
 		super(game);
 		
-		overworld = new OverworldBuilder(11, 11, NUM_PLAYERS, 4).build();
+		overworld = new OverworldBuilder(7, 7, NUM_PLAYERS, 4).build();
 	}
 	
 	@Override

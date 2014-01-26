@@ -95,7 +95,7 @@ public class OverworldBuilder {
 		List<Player> players = new ArrayList<Player>(numPlayers);
 		
 		// player always controls first player
-		players.add(new Player(0, Player.Type.ADVANCED));
+		players.add(new Player(0, Player.Type.PLAYER));
 		for (int i = 1; i < numPlayers; i++) {
 			players.add(new Player(i, Player.Type.ADVANCED));
 		}

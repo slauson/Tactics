@@ -23,6 +23,7 @@ public class OverworldController extends Controller {
 	private Overworld overworld;
 	private Region selectedRegion;
 	
+	private Move previousMove;
 	private Move currentMove;
 	private float currentMoveTime;
 	private boolean paused;
@@ -31,6 +32,7 @@ public class OverworldController extends Controller {
 		this.overworld = overworld;
 		
 		selectedRegion = null;
+		previousMove = null;
 		currentMove = new Move(Move.Type.DUMMY);
 		currentMoveTime = 0;
 		paused = false;
@@ -260,6 +262,20 @@ public class OverworldController extends Controller {
 		
 		if (currentMoveTime < 0) {
 			
+			// deselect and unmark neighbors for attack and move moves
+			if (previousMove != null && (previousMove.type == Move.Type.ATTACK || previousMove.type == Move.Type.MOVE)) {
+				if (previousMove.region != null) {
+					previousMove.region.selected = false;
+					RegionUtils.unmarkRegionNeighbors(previousMove.region);
+				}
+				if (previousMove.otherRegion != null) {
+					previousMove.otherRegion.selected = false;
+					RegionUtils.unmarkRegionNeighbors(previousMove.otherRegion);
+				}
+				
+				previousMove = null;
+			}
+			
 			currentMove.numPhases--;
 			
 			// numPhases - 1
@@ -360,19 +376,8 @@ public class OverworldController extends Controller {
 				break;
 			case -1:
 				
-				// deselect and unmark neighbors for attack moves
-				if (currentMove.type == Move.Type.ATTACK && currentMove.region != null) {
-					currentMove.region.selected = false;
-					RegionUtils.unmarkRegionNeighbors(currentMove.region);
-				}
-				
-				// deselect and unmark neighbors for move moves
-				if (currentMove.type == Move.Type.MOVE && currentMove.otherRegion != null) {
-					currentMove.otherRegion.selected = false;
-					RegionUtils.unmarkRegionNeighbors(currentMove.otherRegion);
-				}
-				
 				// get next move
+				previousMove = currentMove;
 				currentMove = overworld.activePlayer().ai.getNextMove(overworld, overworld.activePlayer());
 				
 				System.out.println("next move: " + currentMove);

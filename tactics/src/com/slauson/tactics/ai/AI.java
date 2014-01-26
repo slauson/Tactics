@@ -36,6 +36,7 @@ public abstract class AI {
 			BATTLE_LIKELIHOOD,
 			ISLAND_STRENGTH_CHANGE,
 			ISLAND_STRENGTH,
+			ISLAND_PERCENTAGE,
 			RANDOM
 		}
 		
@@ -106,7 +107,7 @@ public abstract class AI {
 	 * @param scoreFactor
 	 * @return
 	 */
-	protected static Collection<Move> getMoves(Overworld overworld, Player player, ScoreFactor scoreThreshold, ScoreFactor scoreFactor) {
+	protected static Collection<Move> getMoves(Overworld overworld, Player player, ScoreFactor scoreThreshold, ScoreFactor captureScoreThreshold, ScoreFactor scoreFactor) {
 		
 		Map<Float, Move> moves = new TreeMap<Float, Move>();
 		
@@ -129,6 +130,9 @@ public abstract class AI {
 								case BATTLE_STRENGTH_CHANGE:
 									score.addFactor(type, getBattleStrengthChange(region, neighbor, true));
 									break;
+								case ISLAND_PERCENTAGE:
+									score.addFactor(type, RegionUtils.getIslandPercentage(region.island, player));
+									break;
 								case ISLAND_STRENGTH:
 									score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
 									break;
@@ -142,8 +146,17 @@ public abstract class AI {
 								}
 								
 								// check if score meets threshold
-								if (scoreThreshold.usesType(type)) {
-									aboveThreshold &= score.getScore(type) >= scoreThreshold.getScore(type);
+								// capture threshold
+								if (!neighbor.region.player.equals(region.player) && neighbor.region.unit == null) {
+									if (captureScoreThreshold.usesType(type)) {
+										aboveThreshold &= score.getScore(type) >= captureScoreThreshold.getScore(type);
+									}
+								}
+								// regular move threshold
+								else {
+									if (scoreThreshold.usesType(type)) {
+										aboveThreshold &= score.getScore(type) >= scoreThreshold.getScore(type);
+									}
 								}
 								
 								// update score value
@@ -199,10 +212,15 @@ public abstract class AI {
 								case BATTLE_STRENGTH_CHANGE:
 									if (neighbor.type != Neighbor.Type.RANGED) {
 										score.addFactor(type, getBattleStrengthChange(region, neighbor, false));
+									} else {
+										score.addFactor(type, 0.5f);
 									}
 									break;
 								case BATTLE_LIKELIHOOD:
 									score.addFactor(type, BattleUtils.calculateBattleLikelihood(region, neighbor.region));
+									break;
+								case ISLAND_PERCENTAGE:
+									score.addFactor(type, RegionUtils.getIslandPercentage(region.island, player));
 									break;
 								case ISLAND_STRENGTH:
 									score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
@@ -272,6 +290,9 @@ public abstract class AI {
 						case BATTLE_STRENGTH_CHANGE:
 							score.addFactor(type, reinforcementType.strengthChange);
 							break;
+						case ISLAND_PERCENTAGE:
+							score.addFactor(type, RegionUtils.getIslandPercentage(region.island, player));
+							break;
 						case ISLAND_STRENGTH:
 							score.addFactor(type, RegionUtils.getIslandStrength(region.island, player));
 							break;
@@ -327,16 +348,25 @@ public abstract class AI {
 				float neighborStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 				
 				// swap units, see change in strengths
-				Unit temp = region.unit;
+				Unit tempUnit = region.unit;
 				region.unit = neighbor.region.unit;
-				neighbor.region.unit = temp;
+				neighbor.region.unit = tempUnit;
+				
+				Player tempPlayer = region.player;
+				region.player = neighbor.region.player;
+				neighbor.region.player = tempPlayer;
+				
 				float regionMoveStrength = RegionUtils.getRegionBattleStrength(region);
 				float neighborMoveStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 				
 				// put units back
-				temp = region.unit;
+				tempUnit = region.unit;
 				region.unit = neighbor.region.unit;
-				neighbor.region.unit = temp;
+				neighbor.region.unit = tempUnit;
+				
+				tempPlayer = region.player;
+				region.player = neighbor.region.player;
+				neighbor.region.player = tempPlayer;
 				
 				result.put(neighbor, regionMoveStrength + neighborMoveStrength - regionStrength - neighborStrength);
 			}
@@ -566,16 +596,25 @@ public abstract class AI {
 		float neighborStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 		
 		// swap units, see change in strengths
-		Unit temp = region.unit;
+		Unit tempUnit = region.unit;
 		region.unit = neighbor.region.unit;
-		neighbor.region.unit = temp;
+		neighbor.region.unit = tempUnit;
+		
+		Player tempPlayer = region.player;
+		region.player = neighbor.region.player;
+		neighbor.region.player = tempPlayer;
+		
 		float regionMoveStrength = RegionUtils.getRegionBattleStrength(region);
 		float neighborMoveStrength = RegionUtils.getRegionBattleStrength(neighbor.region);
 		
 		// put units back
-		temp = region.unit;
+		tempUnit = region.unit;
 		region.unit = neighbor.region.unit;
-		neighbor.region.unit = temp;
+		neighbor.region.unit = tempUnit;
+		
+		tempPlayer = region.player;
+		region.player = neighbor.region.player;
+		neighbor.region.player = tempPlayer;
 		
 		if (includeNeighborStrengthChange) {
 			return (regionMoveStrength + neighborMoveStrength - regionStrength - neighborStrength + 2) / 4;

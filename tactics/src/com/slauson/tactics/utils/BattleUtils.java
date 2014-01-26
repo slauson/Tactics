@@ -104,7 +104,7 @@ public class BattleUtils {
 	 */
 	public static float calculateBattleLikelihood(Region attackingRegion, Region defendingRegion) {
 		if (attackingRegion.unit == null) {
-			return -1;
+			return 0;
 		}
 		if (defendingRegion.unit == null) {
 			return 1;
