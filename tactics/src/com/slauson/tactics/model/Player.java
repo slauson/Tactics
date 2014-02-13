@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.slauson.tactics.ai.AI;
 import com.slauson.tactics.ai.AdvancedAI;
 import com.slauson.tactics.ai.RandomAI;
+import com.slauson.tactics.ai.ScoreFactorBuilder;
 import com.slauson.tactics.ai.SimpleAI;
 
 public class Player {
@@ -41,7 +42,7 @@ public class Player {
 			ai = new SimpleAI();
 			break;
 		case ADVANCED:
-			ai = new AdvancedAI();
+			ai = new AdvancedAI(ScoreFactorBuilder.Level.NORMAL);
 			break;
 		default:
 			ai = null;
