@@ -303,6 +303,28 @@ public class RegionUtils {
 		
 		return 1.0f * numPlayerRegions / numRegions;
 	}
+
+	/**
+	 * Returns percentage of overworld owned by player.
+	 * @param overworld
+	 * @param player
+	 * @return
+	 */
+	public static float getOverworldPercentage(Overworld overworld, Player player) {
+		int numPlayerRegions = 0;
+		int numRegions = 0;
+		
+		for (Island island : overworld.islands) {
+			for (Region region : island.regions) {
+				if (region.player.equals(player)) {
+					numPlayerRegions++;
+				}
+				numRegions++;
+			}
+		}
+		
+		return 1.0f * numPlayerRegions / numRegions;
+	}
 	
 	/**
 	 * Returns attackable regions from given region.
