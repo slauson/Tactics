@@ -166,12 +166,14 @@ public class BattleUtils {
 		// attacker victory
 		if (defendingRegion.unit.health <= 0) {
 
-			attackingRegion.player.regions++;
-			defendingRegion.player.regions--;
 			defendingRegion.player.units--;
 			
 			// normal attacking unit
 			if (!attackingRegion.unit.type.isRanged()) {
+				
+				attackingRegion.player.regions++;
+				defendingRegion.player.regions--;
+				
 				defendingRegion.player = attackingRegion.player;
 				defendingRegion.unit = attackingRegion.unit;
 				attackingRegion.unit = null;

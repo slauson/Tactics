@@ -284,6 +284,28 @@ public class RegionUtils {
 	}
 	
 	/**
+	 * Returns strength of player across overworld.
+	 * (sum of player's region's strengths over total overworld strength).
+	 * @param overworld
+	 * @param player
+	 * @return
+	 */
+	public static float getOverworldStrength(Overworld overworld, Player player) {
+		
+		float playerStrength = 0;
+		float overworldStrength = 0;
+		
+		for (Region region : overworld.regions) {
+			if (region.player.equals(player)) {
+				playerStrength += getRegionStrength(region);
+			}
+			overworldStrength += getRegionStrength(region);
+		}
+		
+		return playerStrength / overworldStrength;
+	}
+	
+	/**
 	 * Returns percentage of given island owned by player.
 	 * @param island
 	 * @param player

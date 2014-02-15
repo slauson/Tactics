@@ -18,7 +18,7 @@ import com.slauson.tactics.utils.RegionUtils;
  */
 public class OverworldController extends Controller {
 	
-	private static float TIME_PER_MOVE = 2;
+	private static float TIME_PER_MOVE = 1;
 	
 	private Overworld overworld;
 	private Region selectedRegion;
@@ -108,6 +108,7 @@ public class OverworldController extends Controller {
 							// update region count if not owned by player
 							if (region.player != selectedRegion.player) { 
 								selectedRegion.player.regions++;
+								region.player.regions--;
 							}
 							
 							region.unit = selectedRegion.unit;
@@ -238,6 +239,9 @@ public class OverworldController extends Controller {
 		return false;
 	}
 	
+	/**
+	 * Moves to next phase of current turn, or first phase of next turn.
+	 */
 	private void nextPhase() {
 		overworld.nextPhase();
 		
@@ -249,11 +253,21 @@ public class OverworldController extends Controller {
 			// move to next turn
 			overworld.nextTurn();
 			
+			// get to next active player
+			while (overworld.activePlayer().regions == 0) {
+				overworld.nextTurn();
+			}
+			
 			PlayerUtils.setPlayerUnitsActive(overworld, overworld.activePlayer());
 		} else {
 			// handle reinforcements
 			PlayerUtils.updatePlayerReinforcements(overworld, overworld.activePlayer());
 			PlayerUtils.markPlayerReinforcements(overworld, overworld.activePlayer());
+			
+			// go directly to next phase if player doesn't have any reinforcements
+			if (overworld.activePlayer().reinforcements == 0) {
+				nextPhase();
+			}
 		}
 	}
 	
@@ -326,6 +340,13 @@ public class OverworldController extends Controller {
 					
 					// takeover empty region
 					if (currentMove.otherRegion.unit == null) {
+						
+						// update region counts if owned by other player
+						if (currentMove.region.player != currentMove.otherRegion.player) {
+							currentMove.region.player.regions++;
+							currentMove.otherRegion.player.regions--;
+						}
+						
 						currentMove.otherRegion.player = currentMove.region.player;
 					}
 					

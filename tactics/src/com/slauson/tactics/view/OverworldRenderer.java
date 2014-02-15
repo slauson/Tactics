@@ -11,6 +11,7 @@ import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 import com.slauson.tactics.model.Overworld.Phase;
+import com.slauson.tactics.utils.RegionUtils;
 
 /**
  * Renders the overworld.
@@ -51,6 +52,10 @@ public class OverworldRenderer extends Renderer {
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		
 		renderer.setProjectionMatrix(camera.combined);
+		
+//		if (overworld.activePlayer().type != Player.PlayerType.PLAYER) {
+//			System.out.println(overworld);
+//		}
 		
 		// draw colors
 		renderer.begin(ShapeType.FilledRectangle);
@@ -160,22 +165,31 @@ public class OverworldRenderer extends Renderer {
 		
 		// draw turns
 		screenRenderer.begin(ShapeType.FilledRectangle);
+		int activePlayerNum = 0;
 		for (int i = 0; i < overworld.players.size(); i++) {
 			Player player = overworld.players.get((i + overworld.activePlayerIndex()) % overworld.players.size());
-			screenRenderer.setColor(player.color);
-			float width = (player.regions + player.units) / 2.f / overworld.regions.size() * TURN_BOX_MAX_WIDTH;
-			if (width < TURN_BOX_MIN_WIDTH) {
-				width = TURN_BOX_MIN_WIDTH;
-			}
 			
-			// draw box
-			screenRenderer.filledRect(screenWidth - width, screenHeight - (i+1)*TURN_BOX_HEIGHT, width, TURN_BOX_HEIGHT);
+			// only draw active players
+			if (player.regions > 0) {
 			
-			// draw reinforcement lines
-			// TODO scale these based on size of turn box?
-			screenRenderer.setColor(Color.BLACK);
-			for (int j = 0; j < player.reinforcements; j++) {
-				screenRenderer.filledRect(screenWidth - (j+1)*2, screenHeight - (i+1)*TURN_BOX_HEIGHT, 1, TURN_BOX_HEIGHT);
+				screenRenderer.setColor(player.color);
+				float width = RegionUtils.getOverworldStrength(overworld, player) * TURN_BOX_MAX_WIDTH;
+				
+				if (width < TURN_BOX_MIN_WIDTH) {
+					width = TURN_BOX_MIN_WIDTH;
+				}
+
+				// draw box
+				screenRenderer.filledRect(screenWidth - width, screenHeight - (i+1)*TURN_BOX_HEIGHT, width, TURN_BOX_HEIGHT);
+				
+				// draw reinforcement lines
+				// TODO scale these based on size of turn box?
+				screenRenderer.setColor(Color.BLACK);
+				for (int j = 0; j < player.reinforcements; j++) {
+					screenRenderer.filledRect(screenWidth - (j+1)*2, screenHeight - (activePlayerNum+1)*TURN_BOX_HEIGHT, 1, TURN_BOX_HEIGHT);
+				}
+				
+				activePlayerNum++;
 			}
 		}
 		screenRenderer.end();
