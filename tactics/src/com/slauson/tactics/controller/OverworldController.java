@@ -8,6 +8,7 @@ import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
 import com.slauson.tactics.utils.BattleUtils;
+import com.slauson.tactics.utils.MoveUtils;
 import com.slauson.tactics.utils.PlayerUtils;
 import com.slauson.tactics.utils.RegionUtils;
 
@@ -104,47 +105,9 @@ public class OverworldController extends Controller {
 							return true;
 						}
 						// move (unoccupied region)
-						else if (selectedRegion.unit.hasMove && region.unit == null && neighborType != Neighbor.Type.RANGED) {
-							// update region count if not owned by player
-							if (region.player != selectedRegion.player) { 
-								selectedRegion.player.regions++;
-								region.player.regions--;
-							}
-							
-							region.unit = selectedRegion.unit;
-							region.player = selectedRegion.player;
-							region.unit.hasMove = false;
-							selectedRegion.unit = null;
-							
-							// keep region selected if can still attack
-							if (region.unit.hasAttack) {
-								selectedRegion = region;
-								selectedRegion.selected = true;
-							
-								RegionUtils.markRegionNeighbors(selectedRegion);
-							} else {
-								selectedRegion = null;
-							}
+						else if (selectedRegion.unit.hasMove && (region.unit == null || region.unit.hasMove) && neighborType != Neighbor.Type.RANGED) {
+							selectedRegion = MoveUtils.handleMove(selectedRegion, region);
 							return true;
-						}
-						// move (player owned region)
-						else if (selectedRegion.unit.hasMove && selectedRegion.player == region.player && region.unit != null&& region.unit.hasMove && neighborType != Neighbor.Type.RANGED) {
-							// swap units
-							Unit temp = region.unit;
-							region.unit = selectedRegion.unit;
-							selectedRegion.unit = temp;
-							
-							region.unit.hasMove = false;
-							selectedRegion.unit.hasMove = false;
-							
-							if (region.unit.hasAttack) {
-								selectedRegion = region;
-								selectedRegion.selected = true;
-							
-								RegionUtils.markRegionNeighbors(selectedRegion);
-							} else {
-								selectedRegion = null;
-							}
 						} else {
 							selectedRegion = null;
 						}
@@ -167,43 +130,30 @@ public class OverworldController extends Controller {
 				}
 				break;
 			case REINFORCE:
-				if (region.player == overworld.activePlayer()) {
-					
-					// existing unit
-					if (overworld.activePlayer().reinforcements > 0 && region.unit != null && region.unit.health < Unit.MAX_HEALTH) {
-						
-						// mark previously selected region
-						if (selectedRegion != null) {
-							selectedRegion.marked = true;
-							selectedRegion.selected = false;
-						}
-						
-						region.unit.health = Unit.MAX_HEALTH;
-						region.marked = true;
+				if (region.player == overworld.activePlayer() && overworld.activePlayer().reinforcements > 0 && (region.unit == null || region.unit.health < Unit.MAX_HEALTH)) {
+
+					// mark previously selected region
+					if (selectedRegion != null) {
+						selectedRegion.marked = true;
+						selectedRegion.selected = false;
 						selectedRegion = null;
-						overworld.activePlayer().reinforcements--;
-					}
-					// new unit
-					else if (overworld.activePlayer().reinforcements > 0 && region.unit == null) {
-						
-						// mark previously selected region
-						if (selectedRegion != null) {
-							selectedRegion.marked = true;
-							selectedRegion.selected = false;
-						}
-						
-						region.unit = new Unit(Unit.Type.values()[0], Unit.MAX_HEALTH);
-						selectedRegion = region;
-						selectedRegion.selected = true;
-						overworld.activePlayer().reinforcements--;
-					}
-					// switch unit type of new unit
-					else if (region == selectedRegion) {
-						region.unit.type = region.unit.type.next();
 					}
 					
-					System.out.println("reinforced: " + region);
+					// handle actual reinforcement
+					selectedRegion = MoveUtils.handleReinforcement(region);
+					
+					// keep selected so we can change unit type
+					if (selectedRegion != null) {
+						selectedRegion.selected = true;
+					}
+					
+					overworld.activePlayer().reinforcements--;
 				}
+				// switch unit type of new unit
+				else if (region == selectedRegion) {
+					region.unit.type = region.unit.type.next();
+				}
+				System.out.println("reinforced: " + region);
 				break;
 			}
 			
@@ -337,56 +287,14 @@ public class OverworldController extends Controller {
 					}
 					break;
 				case MOVE:
-					
-					// takeover empty region
-					if (currentMove.otherRegion.unit == null) {
-						
-						// update region counts if owned by other player
-						if (currentMove.region.player != currentMove.otherRegion.player) {
-							currentMove.region.player.regions++;
-							currentMove.otherRegion.player.regions--;
-						}
-						
-						currentMove.otherRegion.player = currentMove.region.player;
-					}
-					
-					// swap units
-					Unit temp = currentMove.region.unit;
-					currentMove.region.unit = currentMove.otherRegion.unit;
-					currentMove.otherRegion.unit = temp;
-					
-					// deselect region and unmark neighboring regions
-					currentMove.region.selected = false;
-					RegionUtils.unmarkRegionNeighbors(currentMove.region);
-					
-					// unit can't move again
-					if (currentMove.region.unit != null) {
-						currentMove.region.unit.hasMove = false;
-					}
-					if (currentMove.otherRegion.unit != null) {
-						currentMove.otherRegion.unit.hasMove = false;
-						
-						// keep marked if unit can still attack
-						if (currentMove.otherRegion.unit.hasAttack) {
-							currentMove.otherRegion.selected = true;
-							RegionUtils.markRegionNeighbors(currentMove.otherRegion);
-						}
-					}
+					MoveUtils.handleMove(currentMove.region, currentMove.otherRegion);
 					break;
 				case REINFORCE:
 					// mark region
 					currentMove.region.marked = true;
 					
-					// new unit
-					if (currentMove.region.unit == null) {
-						currentMove.region.unit = new Unit(currentMove.unitType, Unit.MAX_HEALTH);
-						overworld.activePlayer().reinforcements--;
-					}
-					// existing unit
-					else {
-						currentMove.region.unit.health = Unit.MAX_HEALTH;
-						overworld.activePlayer().reinforcements--;
-					}
+					// handle actual reinforcement
+					MoveUtils.handleReinforcement(currentMove.region, currentMove.unitType);
 					break;
 				case END_PHASE:
 				default:
