@@ -9,6 +9,12 @@ public abstract class Controller {
 
 	protected static final float MAX_DELTA = 0.1f;
 	
+	protected boolean paused;
+	
+	public Controller() {
+		paused = false;
+	}
+	
 	/**
 	 * Updates controller.
 	 * @param delta elapsed time since last update.
@@ -28,5 +34,12 @@ public abstract class Controller {
 	 * @param character
 	 * @return true if key event is handled
 	 */
-	public abstract boolean keyTyped(char character);
+	public boolean keyTyped(char character) {
+		switch (character) {
+		case 'p':
+			paused = !paused;
+			break;
+		}
+		return false;
+	}
 }

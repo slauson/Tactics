@@ -1,6 +1,7 @@
 package com.slauson.tactics.controller;
 
 import com.slauson.tactics.ai.Move;
+import com.slauson.tactics.model.Battle;
 import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
@@ -22,6 +23,7 @@ public class OverworldController extends Controller {
 	private static float TIME_PER_MOVE = 1;
 	
 	private Overworld overworld;
+	private Battle battle;
 	private Region selectedRegion;
 	
 	private Move previousMove;
@@ -29,14 +31,15 @@ public class OverworldController extends Controller {
 	private float currentMoveTime;
 	private boolean paused;
 	
-	public OverworldController(Overworld overworld) {
+	public OverworldController(Overworld overworld, Battle battle) {
+		super();
 		this.overworld = overworld;
+		this.battle = battle;
 		
 		selectedRegion = null;
 		previousMove = null;
 		currentMove = new Move(Move.Type.DUMMY);
 		currentMoveTime = 0;
-		paused = false;
 	}
 	
 	@Override
@@ -45,8 +48,30 @@ public class OverworldController extends Controller {
 			delta = MAX_DELTA;
 		}
 
-		if (!paused && overworld.activePlayer().type != Player.Type.PLAYER) {
-			handleMove(delta);
+		if (!paused) {
+			
+			if (overworld.activePlayer().type != Player.Type.PLAYER) {
+				handleMove(delta);
+			}
+			
+			if (battle.active() && !battle.update(delta)) {
+				// handle battle
+				Region updatedAttackingRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+				
+				// keep region selected if attacker won battle and can still move
+				if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
+					selectedRegion = updatedAttackingRegion;
+					selectedRegion.selected = true;
+					
+					RegionUtils.markRegionNeighbors(selectedRegion);
+				} else {
+					selectedRegion = null;
+				}
+				
+				// reset state
+				battle.reset();
+				overworld.phase = Overworld.Phase.ATTACK;
+			}
 		}
 	}
 	
@@ -90,18 +115,8 @@ public class OverworldController extends Controller {
 						if (selectedRegion.unit.hasAttack && !selectedRegion.player.equals(region.player) && region.unit != null &&
 								((selectedRegion.unit.type.isRanged() && neighborType.isRanged()) || (!selectedRegion.unit.type.isRanged() && !neighborType.isRanged())))
 						{
-							Region updatedAttackingRegion = BattleUtils.handleBattle(selectedRegion, region);
-							
-							// keep region selected if attacker won battle and can still move
-							if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
-								selectedRegion = updatedAttackingRegion;
-								selectedRegion.selected = true;
-								
-								RegionUtils.markRegionNeighbors(selectedRegion);
-							} else {
-								selectedRegion = null;
-							}
-							
+							battle.init(selectedRegion, region);
+							overworld.phase = Overworld.Phase.BATTLE;
 							return true;
 						}
 						// move (unoccupied region)
@@ -155,6 +170,10 @@ public class OverworldController extends Controller {
 				}
 				System.out.println("reinforced: " + region);
 				break;
+			case BATTLE:
+			default:
+				// do nothing
+				break;
 			}
 			
 			return true;
@@ -166,9 +185,11 @@ public class OverworldController extends Controller {
 
 	@Override
 	public boolean keyTyped(char character) {
+		super.keyTyped(character);
+		
 		switch (character) {
 		case ' ':
-			if (overworld.activePlayer().type == Player.Type.PLAYER) {
+			if (overworld.activePlayer().type == Player.Type.PLAYER && overworld.phase != Overworld.Phase.BATTLE) {
 				// unmark previously selected region
 				if (selectedRegion != null) {
 					RegionUtils.unmarkRegionNeighbors(selectedRegion);
@@ -264,7 +285,7 @@ public class OverworldController extends Controller {
 			case 0:
 				switch (currentMove.type) {
 				case ATTACK:
-					Region updatedAttackingRegion = BattleUtils.handleBattle(currentMove.region, currentMove.otherRegion);
+					Region updatedAttackingRegion = BattleUtils.handleBattle(currentMove.region, currentMove.otherRegion, null);
 					
 					// deselect region and unmark neighboring regions
 					currentMove.region.selected = false;

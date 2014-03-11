@@ -1,5 +1,8 @@
 package com.slauson.tactics.screen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
@@ -23,8 +26,8 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 	
 	protected int width, height;
 	
-	protected Renderer renderer;
-	protected Controller controller;
+	protected List<Renderer> renderers;
+	protected List<Controller> controllers;
 	
 	protected OrthographicCamera camera;
 	
@@ -47,8 +50,14 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 	
 	@Override
 	public void render(float delta) {
-		controller.update(delta);
-		renderer.render(camera, delta, DEBUG);
+		
+		for (Controller controller : controllers) {
+			controller.update(delta);
+		}
+		
+		for (Renderer renderer : renderers) {
+			renderer.render(camera, delta, DEBUG);
+		}
 	}
 
 	@Override
@@ -70,12 +79,16 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 		
 		System.out.println("camera at: " + camera.position.x + ", " + camera.position.y);
 		
-		renderer.resize(width, height);
+		for (Renderer renderer : renderers) {
+			renderer.resize(width, height);
+		}
 	}
 
 	@Override
 	public void show() {
 		Gdx.input.setInputProcessor(this);
+		renderers = new ArrayList<Renderer>();
+		controllers = new ArrayList<Controller>();
 	}
 
 	@Override
@@ -110,6 +123,11 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 		
 		// set this here so we use the updated position in touchDragged
 		lastMouseScreenPosition.set(screenX, screenY, 0);
+		
+		// update controllers
+		for (Controller controller : controllers) {
+			controller.touchDown(lastMousePressWorldPosition.x, lastMousePressWorldPosition.y);
+		}
 		
 		return true;
 	}
@@ -183,6 +201,12 @@ public abstract class Screen implements com.badlogic.gdx.Screen, InputProcessor 
 			camera.update();
 			break;
 		}
+		
+		// controller updates
+		for (Controller controller : controllers) {
+			controller.keyTyped(character);
+		}
+		
 		return true;
 	}
 }

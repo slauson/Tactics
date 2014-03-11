@@ -122,16 +122,19 @@ public class BattleUtils {
 	 * Handles battle between two regions.
 	 * @param attackingRegion
 	 * @param defendingRegion
+	 * @param battleDamage
 	 * @return attacker's updated region
 	 */
-	public static Region handleBattle(Region attackingRegion, Region defendingRegion) {
+	public static Region handleBattle(Region attackingRegion, Region defendingRegion, float[] battleDamage) {
 		
 		//System.out.println("handleBattle (" + attackingRegion + ") vs (" + defendingRegion + ")");
 		
 		// only allow a single attack
 		attackingRegion.unit.hasAttack = false;
 		
-		float[] battleDamage = calculateBattleDamage(attackingRegion, defendingRegion, Unit.UNIT_WEAKNESS_RANDOM_FACTOR);
+		if (battleDamage == null) {
+			battleDamage = calculateBattleDamage(attackingRegion, defendingRegion, Unit.UNIT_WEAKNESS_RANDOM_FACTOR);
+		}
 		
 		float attackerAttackDamage = battleDamage[0];
 		float defenderAttackDamage = battleDamage[1];

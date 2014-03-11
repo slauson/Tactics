@@ -50,7 +50,24 @@ public class Unit {
 		}
 	}
 	
+	/**
+	 * Unit state.
+	 */
+	public enum State {
+		IDLE,
+		BATTLE;
+		
+		/**
+		 * Returns true if unit requires animation.
+		 * @return
+		 */
+		public boolean animate() {
+			return this != IDLE;
+		}
+	}
+	
 	public Type type;
+	public State state;
 	
 	public float health;
 	public boolean hasMove;
@@ -59,6 +76,7 @@ public class Unit {
 	public Unit(Type type, float health) {
 		this.type = type;
 		this.health = health;
+		this.state = State.IDLE;
 		
 		hasMove = true;
 		hasAttack = true;

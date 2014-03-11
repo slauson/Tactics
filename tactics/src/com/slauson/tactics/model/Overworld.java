@@ -16,10 +16,10 @@ import com.slauson.tactics.utils.Utils;
 public class Overworld {
 
 	public enum Phase {
-		ATTACK, REINFORCE;
+		ATTACK, REINFORCE, BATTLE;
 
 		public Phase next() {
-			if (this == ATTACK) {
+			if (this == ATTACK || this == BATTLE) {
 				return REINFORCE;
 			} else {
 				return ATTACK;

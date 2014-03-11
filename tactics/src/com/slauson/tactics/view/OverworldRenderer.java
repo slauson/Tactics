@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.slauson.tactics.model.Battle;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
@@ -30,10 +31,12 @@ public class OverworldRenderer extends Renderer {
 	private ShapeRenderer renderer;
 	
 	private Overworld overworld;
+	private Battle battle;
 	
-	public OverworldRenderer(Overworld overworld) {
+	public OverworldRenderer(Overworld overworld, Battle battle) {
 		super();
 		this.overworld = overworld;
+		this.battle = battle;
 		
 		renderer = new ShapeRenderer();
 	}
@@ -44,7 +47,7 @@ public class OverworldRenderer extends Renderer {
 	@Override
 	public void render(OrthographicCamera camera, float delta, boolean debug) {
 
-		if (overworld.phase == Phase.ATTACK) {
+		if (overworld.phase == Phase.ATTACK || overworld.phase == Phase.BATTLE) {
 			Gdx.gl.glClearColor(0f, 0f, 0f, 1);
 		} else {
 			Gdx.gl.glClearColor(1f, 1f, 1f, 1);
@@ -100,57 +103,9 @@ public class OverworldRenderer extends Renderer {
 //						region.player.color.b*(Unit.MAX_HEALTH-region.unit.health)/Unit.MAX_HEALTH/2,
 //						1);
 				
-				// size of unit is based on health
-				float sizeFactor = 0.25f + (region.unit.health / Unit.MAX_HEALTH * 3 / 4);
-				
-				
-				switch(region.unit.type) {
-				case CIRCLE:
-					renderer.begin(ShapeType.FilledCircle);
-					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
-					renderer.end();
-					break;
-				case SQUARE:
-					renderer.begin(ShapeType.FilledRectangle);
-					renderer.filledRect(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor, 3*region.bounds.width/4*sizeFactor, 3*region.bounds.height/4*sizeFactor);
-					renderer.end();
-					break;
-				case TRIANGLE:
-					renderer.begin(ShapeType.FilledTriangle);
-					renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
-							region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
-							region.position.x + region.bounds.width/2 + 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
-//					renderer.filledTriangle(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8,
-//							region.position.x + region.bounds.width/2, region.position.y + 7*region.bounds.height/8,
-//							region.position.x + 7*region.bounds.width/8, region.position.y + region.bounds.height/8);
-					renderer.end();
-					break;
-				case RANGED_CIRCLE:
-					renderer.begin(ShapeType.FilledCircle);
-					//renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
-					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 - 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
-					renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
-					renderer.end();
-					renderer.identity();
-					break;
-				case RANGED_SQUARE:
-					renderer.begin(ShapeType.FilledRectangle);
-					renderer.filledRect(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor, 3*region.bounds.width/8*sizeFactor, 3*region.bounds.height/4*sizeFactor);
-					renderer.end();
-					break;
-				case RANGED_TRIANGLE:
-					renderer.begin(ShapeType.FilledTriangle);
-					renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
-							region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
-							region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
-//					renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
-//							region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2,
-//							region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
-//					renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2,
-//							region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
-//							region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2);
-					renderer.end();
-					break;
+				// draw all idle units
+				if (!region.unit.state.animate()) {
+					drawUnit(renderer, region);
 				}
 			}
 		}
