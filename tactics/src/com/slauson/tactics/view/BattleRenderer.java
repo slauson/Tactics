@@ -7,8 +7,8 @@ import com.slauson.tactics.model.Battle;
 
 public class BattleRenderer extends Renderer {
 
-	private static final float SPIN_DURATION = 1f * Battle.DURATION / 2;
-	private static final float SHAKE_DURATION = 0.5f * Battle.DURATION / 2;
+	//private static final float SPIN_DURATION = 1f * Battle.DURATION / 2;
+	//private static final float SHAKE_DURATION = 0.5f * Battle.DURATION / 2;
 	private static final float SHAKE_FACTOR = 0.05f;
 	
 	private float counter;
@@ -34,39 +34,55 @@ public class BattleRenderer extends Renderer {
 		
 		if (battle.active()) {
 			
-			float rotation;
-			float offset;
+			float rotation = 0;
+			float offset = 0;
 			
-			if (battle.percentComplete() < 0.5f) {
-				 rotation = ((counter % SPIN_DURATION) / SPIN_DURATION) * 360;
-			} else {
-				rotation = 0;
-			}
-			
-			float shakeCounter = counter % SHAKE_DURATION;
-			
-			if (battle.percentComplete() > 0.5f) {
+			// calculate offset/spin
+			switch (battle.phase) {
+			case ATTACKER_ATTACK:
+			case DEFENDER_ATTACK:
+				 rotation = battle.percentPhaseComplete() * 360;
+				break;
+			case ATTACKER_DAMAGE:
+			case DEFENDER_DAMAGE:
 				// + to -
-				if (shakeCounter < SHAKE_DURATION / 2) {
-					offset = ((SHAKE_DURATION / 4) - (shakeCounter)) / (SHAKE_DURATION / 4)
+				if (battle.percentPhaseComplete() < 0.5) {
+					offset = ((0.25f - battle.percentPhaseComplete()) / 0.25f)
 							* SHAKE_FACTOR * battle.defendingRegion.bounds.width;
 				}
 				// - to +
 				else {
-					offset = -((3 * SHAKE_DURATION / 4) - (shakeCounter)) / (SHAKE_DURATION / 4)
+					offset = -((0.75f - battle.percentPhaseComplete()) / 0.25f)
 							* SHAKE_FACTOR * battle.defendingRegion.bounds.width;
 				}
-			} else {
-				offset = 0;
+				break;
+			default:
+				// do nothing
 			}
 			
+			// draw units
 			renderer.setColor(Color.BLACK);
 			
-			// draw attacking unit
-			drawUnit(renderer, battle.attackingRegion, 0, 0, rotation);
-			
-			// draw defending unit
-			drawUnit(renderer, battle.defendingRegion, offset, 0, 0);
+			switch (battle.phase) {
+			case ATTACKER_ATTACK:
+				drawUnit(renderer, battle.attackingRegion, 0, 0, rotation);
+				drawUnit(renderer, battle.defendingRegion);
+				break;
+			case DEFENDER_ATTACK:
+				drawUnit(renderer, battle.attackingRegion);
+				drawUnit(renderer, battle.defendingRegion, 0, 0, rotation);
+				break;
+			case ATTACKER_DAMAGE:
+				drawUnit(renderer, battle.attackingRegion, offset, 0, 0);
+				drawUnit(renderer, battle.defendingRegion);
+				break;
+			case DEFENDER_DAMAGE:
+				drawUnit(renderer, battle.attackingRegion);
+				drawUnit(renderer, battle.defendingRegion, offset, 0, 0);
+				break;
+			default:
+				// do nothing
+			}
 		}
 	}
 }
