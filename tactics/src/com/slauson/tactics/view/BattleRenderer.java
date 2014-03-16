@@ -38,7 +38,7 @@ public class BattleRenderer extends Renderer {
 			float offset = 0;
 			
 			// calculate offset/spin
-			switch (battle.phase) {
+			switch (battle.currentPhase()) {
 			case ATTACKER_ATTACK:
 			case DEFENDER_ATTACK:
 				 rotation = battle.percentPhaseComplete() * 360;
@@ -63,7 +63,7 @@ public class BattleRenderer extends Renderer {
 			// draw units
 			renderer.setColor(Color.BLACK);
 			
-			switch (battle.phase) {
+			switch (battle.currentPhase()) {
 			case ATTACKER_ATTACK:
 				drawUnit(renderer, battle.attackingRegion, 0, 0, rotation);
 				drawUnit(renderer, battle.defendingRegion);
@@ -79,6 +79,13 @@ public class BattleRenderer extends Renderer {
 			case DEFENDER_DAMAGE:
 				drawUnit(renderer, battle.attackingRegion);
 				drawUnit(renderer, battle.defendingRegion, offset, 0, 0);
+				break;
+			case UPDATE_HEALTH:
+				drawUnit(renderer, battle.attackingRegion);
+				drawUnit(renderer, battle.defendingRegion);
+				break;
+			case TAKEOVER:
+				drawUnit(renderer, battle.attackingRegion);
 				break;
 			default:
 				// do nothing

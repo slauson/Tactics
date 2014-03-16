@@ -1,5 +1,7 @@
 package com.slauson.tactics.model;
 
+import com.badlogic.gdx.math.Vector2;
+
 public class Unit {
 	
 	public static float MAX_HEALTH = 10f;
@@ -69,6 +71,8 @@ public class Unit {
 	public Type type;
 	public State state;
 	
+	public Vector2 offset;
+	
 	public float health;
 	public boolean hasMove;
 	public boolean hasAttack;
@@ -80,6 +84,7 @@ public class Unit {
 		
 		hasMove = true;
 		hasAttack = true;
+		offset = null;
 	}
 	
 	@Override

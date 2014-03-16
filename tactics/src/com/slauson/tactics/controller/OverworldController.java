@@ -55,22 +55,55 @@ public class OverworldController extends Controller {
 			}
 			
 			if (battle.active() && !battle.update(delta)) {
-				// handle battle
-				Region updatedAttackingRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
 				
-				// keep region selected if attacker won battle and can still move
-				if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
-					selectedRegion = updatedAttackingRegion;
-					selectedRegion.selected = true;
+				// battle is over
+				if (!battle.complete) {
 					
-					RegionUtils.markRegionNeighbors(selectedRegion);
-				} else {
-					selectedRegion = null;
+					battle.battleHealth = BattleUtils.handleBattleDamage(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+					battle.originalHealth = new float[] { battle.attackingRegion.unit.health, battle.defendingRegion.unit.health };
+					
+					battle.phases.add(Battle.Phase.UPDATE_HEALTH);
+					
+					// attacker takeover
+					if (battle.battleHealth[1] < 0 && battle.type == Battle.Type.DIRECT) {
+						battle.phases.add(Battle.Phase.TAKEOVER);
+					}
+					
+					// mark battle as complete
+					battle.complete = true;
 				}
-				
-				// reset state
-				battle.reset();
-				overworld.phase = Overworld.Phase.ATTACK;
+				// post-battle is over
+				else {
+					
+					selectedRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+					
+					// keep updated attacking region selected if it can move
+					if (selectedRegion != null && selectedRegion.unit != null && selectedRegion.unit.hasMove) {
+						selectedRegion.selected = true;
+						RegionUtils.markRegionNeighbors(selectedRegion);
+					}
+					
+					// reset state
+					battle.reset();
+					overworld.phase = Overworld.Phase.ATTACK;
+
+				}
+//				// handle battle
+//				Region updatedAttackingRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+//				
+//				// keep region selected if attacker won battle and can still move
+//				if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
+//					selectedRegion = updatedAttackingRegion;
+//					selectedRegion.selected = true;
+//					
+//					RegionUtils.markRegionNeighbors(selectedRegion);
+//				} else {
+//					selectedRegion = null;
+//				}
+//				
+//				// reset state
+//				battle.reset();
+//				overworld.phase = Overworld.Phase.ATTACK;
 			}
 		}
 	}

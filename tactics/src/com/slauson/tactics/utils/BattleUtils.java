@@ -20,8 +20,6 @@ public class BattleUtils {
 	 */
 	public static float[] calculateBattleDamage(Region attackingRegion, Region defendingRegion, float randomFactor) {
 		
-		float[] result = new float[2];
-		
 		// calculate attack factor for attacking region 
 		float attackFactor = 1f;
 
@@ -82,8 +80,10 @@ public class BattleUtils {
 		float defendFactor = 2 - attackFactor;
 
 		// calculate how much damage each region can do
-		result[0] = attackFactor * attackingRegion.unit.health;
-		result[1] = defendFactor * defendingRegion.unit.health;
+		float[] result = {
+			attackFactor * attackingRegion.unit.health,
+			defendFactor * defendingRegion.unit.health
+		};
 		
 		// special case for ranged units
 		if ((attackingRegion.unit.type.isRanged() && !defendingRegion.unit.type.isRanged()) ||
@@ -119,6 +119,54 @@ public class BattleUtils {
 	}
 	
 	/**
+	 * Returns attacking region health, defending region health
+	 * @param attackingRegion attacking region
+	 * @param defendingRegion defending region
+	 * @param battleDamage battle damage
+	 * @return
+	 */
+	public static float[] handleBattleDamage(Region attackingRegion, Region defendingRegion, float[] battleDamage) {
+		
+		float[] battleHealth  = {attackingRegion.unit.health, defendingRegion.unit.health};
+		
+		if (battleDamage == null) {
+			battleDamage = calculateBattleDamage(attackingRegion, defendingRegion, Unit.UNIT_WEAKNESS_RANDOM_FACTOR);
+		}
+		
+		float attackerAttackDamage = battleDamage[0];
+		float defenderAttackDamage = battleDamage[1];
+		
+		// update health
+		battleHealth[0] -= defenderAttackDamage;
+		battleHealth[1] -= attackerAttackDamage;
+		
+		//System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
+		
+		// special case of both units defeated
+		if (battleHealth[0] <= 0 && battleHealth[1] <= 0) {
+
+			// this is unlikely
+			
+			// determine percentage of attack that went wasted
+			float attackerOverkillFactor = -battleHealth[0] / defenderAttackDamage;
+			float defenderOverkillFactor = -battleHealth[1] / attackerAttackDamage;
+			
+			// defender defeated first
+			if (defenderOverkillFactor >= attackerOverkillFactor) {
+				// update attacker health
+				battleHealth[0] += (defenderOverkillFactor * defenderAttackDamage);
+			}
+			// attacker defeated first
+			else {
+				// update defender health
+				battleHealth[1] += (attackerOverkillFactor * attackerAttackDamage);
+			}
+		}
+		
+		return battleHealth;
+	}
+	
+	/**
 	 * Handles battle between two regions.
 	 * @param attackingRegion
 	 * @param defendingRegion
@@ -129,42 +177,13 @@ public class BattleUtils {
 		
 		//System.out.println("handleBattle (" + attackingRegion + ") vs (" + defendingRegion + ")");
 		
+		float[] battleHealth = handleBattleDamage(attackingRegion, defendingRegion, battleDamage);
+		
+		attackingRegion.unit.health = battleHealth[0];
+		defendingRegion.unit.health = battleHealth[1];
+		
 		// only allow a single attack
 		attackingRegion.unit.hasAttack = false;
-		
-		if (battleDamage == null) {
-			battleDamage = calculateBattleDamage(attackingRegion, defendingRegion, Unit.UNIT_WEAKNESS_RANDOM_FACTOR);
-		}
-		
-		float attackerAttackDamage = battleDamage[0];
-		float defenderAttackDamage = battleDamage[1];
-		
-		// update health
-		attackingRegion.unit.health -= defenderAttackDamage;
-		defendingRegion.unit.health -= attackerAttackDamage;
-		
-		//System.out.println("battle result (" + attackingRegion.unit + ") (" + defendingRegion.unit + ")");
-		
-		// special case of both units defeated
-		if (defendingRegion.unit.health <= 0 && attackingRegion.unit.health <= 0) {
-
-			// this is unlikely
-			
-			// determine percentage of attack that went wasted
-			float attackerOverkillFactor = -attackingRegion.unit.health / defenderAttackDamage;
-			float defenderOverkillFactor = -defendingRegion.unit.health / attackerAttackDamage;
-			
-			// defender defeated first
-			if (defenderOverkillFactor >= attackerOverkillFactor) {
-				// update attacker health
-				attackingRegion.unit.health += (defenderOverkillFactor * defenderAttackDamage);
-			}
-			// attacker defeated first
-			else {
-				// update defender health
-				defendingRegion.unit.health += (attackerOverkillFactor * attackerAttackDamage);
-			}
-		}
 		
 		// attacker victory
 		if (defendingRegion.unit.health <= 0) {

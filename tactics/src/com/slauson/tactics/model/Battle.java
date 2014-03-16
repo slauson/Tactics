@@ -1,7 +1,12 @@
 package com.slauson.tactics.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.badlogic.gdx.math.Vector2;
 import com.slauson.tactics.utils.BattleUtils;
 
+// TODO BattleController
 public class Battle {
 	
 	public static final float DURATION = 1f;
@@ -15,33 +20,32 @@ public class Battle {
 		DEFENDER_DAMAGE,
 		DEFENDER_ATTACK,
 		ATTACKER_DAMAGE,
-		DONE;
-		
-		public Phase next(int numPhases) {
-			switch (this) {
-			case ATTACKER_ATTACK:
-				return DEFENDER_DAMAGE;
-			case DEFENDER_DAMAGE:
-				return numPhases > 2 ? DEFENDER_ATTACK : DONE;
-			case DEFENDER_ATTACK:
-				return ATTACKER_DAMAGE;
-			case ATTACKER_DAMAGE:
-				return DONE;
-			case DONE:
-			default:
-				return DONE;
-			}
-		}
+		UPDATE_HEALTH,
+		TAKEOVER;
+	}
+	
+	/**
+	 * Type of battle
+	 */
+	public static enum Type {
+		DIRECT,
+		RANGED;
 	}
 	
 	public Region attackingRegion, defendingRegion;
 	
+	public float[] originalHealth;
+	public float[] battleHealth;
 	public float[] battleDamage;
 	public float phaseTime;
-	public Phase phase;
-	public int numPhases;
+	
+	// battle is complete
+	public boolean complete;
+	public List<Phase> phases;
+	public Type type;
 	
 	public Battle() {
+		phases = new ArrayList<Phase>(Phase.values().length);
 		reset();
 	}
 	
@@ -56,19 +60,23 @@ public class Battle {
 		phaseTime = DURATION;
 		
 		// calculate number of phases
-		// check if defending region can attack back
 		// assuming attacking region can attack...
+		phases.add(Phase.ATTACKER_ATTACK);
+		phases.add(Phase.DEFENDER_DAMAGE);
+		
+		// check if defending region can attack back
 		for (Neighbor neighbor : defendingRegion.neighbors) {
 			if (neighbor.region.equals(attackingRegion)) {
-				if (neighbor.type == Neighbor.Type.DIRECT) {
-					numPhases = defendingRegion.unit.type.isRanged() ? 2 : 4;
-				} else {
-					numPhases = defendingRegion.unit.type.isRanged() ? 4 : 2;
+				if ((neighbor.type == Neighbor.Type.DIRECT && !defendingRegion.unit.type.isRanged())
+						|| (neighbor.type != Neighbor.Type.DIRECT && defendingRegion.unit.type.isRanged()))
+				{
+					phases.add(Phase.DEFENDER_ATTACK);
+					phases.add(Phase.ATTACKER_DAMAGE);
 				}
+				
+				type = (neighbor.type == Neighbor.Type.DIRECT) ? Type.DIRECT : Type.RANGED;
 			}
 		}
-		
-		phase = Phase.ATTACKER_ATTACK;
 	}
 	
 	public void reset() {
@@ -80,8 +88,12 @@ public class Battle {
 		}
 		attackingRegion = null;
 		defendingRegion = null;
-		phase = Phase.DONE;
-		numPhases = 0;
+		phases.clear();
+		complete = false;
+		
+		battleDamage = null;
+		battleHealth = null;
+		originalHealth = null;
 	}
 	
 	/**
@@ -92,23 +104,58 @@ public class Battle {
 	public boolean update(float delta) {
 		phaseTime -= delta;
 		
+		switch (phases.get(0)) {
+		case UPDATE_HEALTH:
+			// update health
+			attackingRegion.unit.health = originalHealth[0] - ((originalHealth[0] - battleHealth[0]) * percentPhaseComplete());
+			defendingRegion.unit.health = originalHealth[1] - ((originalHealth[1] - battleHealth[1]) * percentPhaseComplete());
+			break;
+		case TAKEOVER:
+			// update position offsets
+			if (attackingRegion.unit.offset == null) {
+				attackingRegion.unit.offset = new Vector2();
+			}
+			attackingRegion.unit.offset.x = (defendingRegion.position.x - attackingRegion.position.x) * percentPhaseComplete();
+			attackingRegion.unit.offset.y = (defendingRegion.position.y - attackingRegion.position.y) * percentPhaseComplete();
+			break;
+		default:
+			// do nothing
+		}
+		
 		if (phaseTime < 0) {
-			// move to next phase
-			phase = phase.next(numPhases);
 			
-			System.out.println(phase);
+			switch (phases.get(0)) {
+			case UPDATE_HEALTH:
+				// update health
+				attackingRegion.unit.health = battleHealth[0];
+				defendingRegion.unit.health = battleHealth[1];
+				break;
+			case TAKEOVER:
+				// reset position offsets
+				attackingRegion.unit.offset = null;
+				break;
+			default:
+				// do nothing
+			}
 			
+			if (!phases.isEmpty()) {
+				phases.remove(0);
+			}
 			phaseTime = PHASE_DURATION + phaseTime;
 		}
 		
-		return phase != Phase.DONE;
+		return !phases.isEmpty();
 	}
 	
 	public boolean active () {
-		return phase != Phase.DONE;
+		return !phases.isEmpty();
 	}
 	
 	public float percentPhaseComplete() {
-		return phaseTime / PHASE_DURATION;
+		return (PHASE_DURATION - phaseTime) / PHASE_DURATION;
+	}
+	
+	public Phase currentPhase() {
+		return phases.get(0);
 	}
 }

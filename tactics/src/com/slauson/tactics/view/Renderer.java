@@ -71,6 +71,11 @@ public abstract class Renderer {
 	
 	public void drawUnit(ShapeRenderer renderer, Region region, float horizontalOffset, float verticalOffset, float rotationAngle) {
 		
+		if (region.unit.offset != null) {
+			horizontalOffset += region.unit.offset.x;
+			verticalOffset += region.unit.offset.y;
+		}
+		
 		// size of unit is based on health
 		float sizeFactor = 0.25f + (region.unit.health / Unit.MAX_HEALTH * 3 / 4);
 		
