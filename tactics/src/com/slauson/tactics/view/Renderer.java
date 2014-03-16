@@ -8,11 +8,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
-import com.slauson.tactics.model.Overworld.Phase;
 
 public abstract class Renderer {
 
 	private static final int FPS_MIN_CHANGE = 5;
+	protected static final float NON_TURN_COLOR_FACTOR = 0.5f;
 	
 	private int fps;
 	
@@ -66,15 +66,6 @@ public abstract class Renderer {
 	}
 	
 	public void drawUnit(ShapeRenderer renderer, Region region) {
-		drawUnit(renderer, region, 0, 0, 0);
-	}
-	
-	public void drawUnit(ShapeRenderer renderer, Region region, float horizontalOffset, float verticalOffset, float rotationAngle) {
-		
-		if (region.unit.offset != null) {
-			horizontalOffset += region.unit.offset.x;
-			verticalOffset += region.unit.offset.y;
-		}
 		
 		// size of unit is based on health
 		float sizeFactor = 0.25f + (region.unit.health / Unit.MAX_HEALTH * 3 / 4);
@@ -82,28 +73,34 @@ public abstract class Renderer {
 		switch(region.unit.type) {
 		case CIRCLE:
 			renderer.begin(ShapeType.FilledCircle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
 			renderer.end();
 			break;
 		case SQUARE:
 			renderer.begin(ShapeType.FilledRectangle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			renderer.filledRect(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor, 3*region.bounds.width/4*sizeFactor, 3*region.bounds.height/4*sizeFactor);
 			renderer.end();
 			break;
 		case TRIANGLE:
 			renderer.begin(ShapeType.FilledTriangle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
 					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
 					region.position.x + region.bounds.width/2 + 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
@@ -114,10 +111,12 @@ public abstract class Renderer {
 			break;
 		case RANGED_CIRCLE:
 			renderer.begin(ShapeType.FilledCircle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			//renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, 3*region.bounds.width/8*sizeFactor, 20);
 			renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 - 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
 			renderer.filledCircle(region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/16*sizeFactor, 3*region.bounds.width/16*sizeFactor, 20);
@@ -126,19 +125,23 @@ public abstract class Renderer {
 			break;
 		case RANGED_SQUARE:
 			renderer.begin(ShapeType.FilledRectangle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			renderer.filledRect(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor, 3*region.bounds.width/8*sizeFactor, 3*region.bounds.height/4*sizeFactor);
 			renderer.end();
 			break;
 		case RANGED_TRIANGLE:
 			renderer.begin(ShapeType.FilledTriangle);
-			if (rotationAngle != 0) {
-				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, rotationAngle);
+			if (region.unit.rotation != 0) {
+				rotateAroundPoint(renderer, region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2, region.unit.rotation);
 			}
-			renderer.translate(horizontalOffset, verticalOffset, 0);
+			if (region.unit.offset.len() != 0) {
+				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
+			}
 			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
 					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
 					region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);

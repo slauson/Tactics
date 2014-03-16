@@ -72,6 +72,7 @@ public class Unit {
 	public State state;
 	
 	public Vector2 offset;
+	public float rotation;
 	
 	public float health;
 	public boolean hasMove;
@@ -80,11 +81,12 @@ public class Unit {
 	public Unit(Type type, float health) {
 		this.type = type;
 		this.health = health;
-		this.state = State.IDLE;
 		
+		state = State.IDLE;
+		rotation = 0f;
 		hasMove = true;
 		hasAttack = true;
-		offset = null;
+		offset = new Vector2();
 	}
 	
 	@Override

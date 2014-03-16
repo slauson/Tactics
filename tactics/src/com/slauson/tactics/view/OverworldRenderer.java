@@ -23,7 +23,6 @@ public class OverworldRenderer extends Renderer {
 	
 	private static final Color SELECTED_REGION_COLOR = Color.WHITE;
 	private static final float MARKED_REGION_COLOR_FACTOR = 0.25f;
-	private static final float NON_TURN_COLOR_FACTOR = 0.5f;
 	private static final int TURN_BOX_HEIGHT = 20;
 	private static final int TURN_BOX_MIN_WIDTH = 20;
 	private static final int TURN_BOX_MAX_WIDTH = 100;

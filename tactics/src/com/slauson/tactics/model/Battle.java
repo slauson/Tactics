@@ -99,52 +99,9 @@ public class Battle {
 	/**
 	 * Updates battle
 	 * @param delta delta passed
-	 * @return true if battle is still active
 	 */
-	public boolean update(float delta) {
+	public void update(float delta) {
 		phaseTime -= delta;
-		
-		switch (phases.get(0)) {
-		case UPDATE_HEALTH:
-			// update health
-			attackingRegion.unit.health = originalHealth[0] - ((originalHealth[0] - battleHealth[0]) * percentPhaseComplete());
-			defendingRegion.unit.health = originalHealth[1] - ((originalHealth[1] - battleHealth[1]) * percentPhaseComplete());
-			break;
-		case TAKEOVER:
-			// update position offsets
-			if (attackingRegion.unit.offset == null) {
-				attackingRegion.unit.offset = new Vector2();
-			}
-			attackingRegion.unit.offset.x = (defendingRegion.position.x - attackingRegion.position.x) * percentPhaseComplete();
-			attackingRegion.unit.offset.y = (defendingRegion.position.y - attackingRegion.position.y) * percentPhaseComplete();
-			break;
-		default:
-			// do nothing
-		}
-		
-		if (phaseTime < 0) {
-			
-			switch (phases.get(0)) {
-			case UPDATE_HEALTH:
-				// update health
-				attackingRegion.unit.health = battleHealth[0];
-				defendingRegion.unit.health = battleHealth[1];
-				break;
-			case TAKEOVER:
-				// reset position offsets
-				attackingRegion.unit.offset = null;
-				break;
-			default:
-				// do nothing
-			}
-			
-			if (!phases.isEmpty()) {
-				phases.remove(0);
-			}
-			phaseTime = PHASE_DURATION + phaseTime;
-		}
-		
-		return !phases.isEmpty();
 	}
 	
 	public boolean active () {

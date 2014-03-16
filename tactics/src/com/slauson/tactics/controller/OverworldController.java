@@ -54,7 +54,7 @@ public class OverworldController extends Controller {
 				handleMove(delta);
 			}
 			
-			if (battle.active() && !battle.update(delta)) {
+			if (battle.active() && !battle.active()) {
 				
 				// battle is over
 				if (!battle.complete) {
