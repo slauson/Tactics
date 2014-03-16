@@ -18,11 +18,14 @@ public class OverworldScreen extends Screen {
 
 	private static final int NUM_PLAYERS = 2;
 	
+	private TacticsGame game;
+	
 	private Overworld overworld;
 	private Battle battle;
 	
 	public OverworldScreen(TacticsGame game) {
 		super(game);
+		this.game = game;
 		
 		overworld = new OverworldBuilder(7, 7, NUM_PLAYERS, 4).build();
 		battle = new Battle();
@@ -33,7 +36,7 @@ public class OverworldScreen extends Screen {
 		super.show();
 		renderers.add(new OverworldRenderer(overworld, battle));
 		renderers.add(new BattleRenderer(battle));
-		controllers.add(new OverworldController(overworld, battle));
-		controllers.add(new BattleController(battle));
+		controllers.add(new OverworldController(game, overworld, battle));
+		controllers.add(new BattleController(game, battle));
 	}
 }

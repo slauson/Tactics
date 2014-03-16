@@ -1,7 +1,10 @@
 package com.slauson.tactics.controller;
 
-import com.badlogic.gdx.math.Vector2;
+import com.slauson.tactics.TacticsGame;
+import com.slauson.tactics.event.Event;
 import com.slauson.tactics.model.Battle;
+import com.slauson.tactics.model.Region;
+import com.slauson.tactics.utils.BattleUtils;
 
 public class BattleController extends Controller {
 	
@@ -9,7 +12,8 @@ public class BattleController extends Controller {
 
 	private Battle battle;
 	
-	public BattleController(Battle battle) {
+	public BattleController(TacticsGame game, Battle battle) {
+		super(game);
 		this.battle = battle;
 	}
 	
@@ -69,6 +73,7 @@ public class BattleController extends Controller {
 				// do nothing
 			}
 			
+			// battle phase is over
 			if (battle.phaseTime < 0) {
 				
 				// reset health/offsets/rotation
@@ -99,12 +104,41 @@ public class BattleController extends Controller {
 					// do nothing
 				}
 				
+				// go to next phase of battle
 				if (!battle.phases.isEmpty()) {
 					battle.phases.remove(0);
+					battle.phaseTime = Battle.PHASE_DURATION + battle.phaseTime;
 				}
-				battle.phaseTime = Battle.PHASE_DURATION + battle.phaseTime;
+				
+				// battle is over
+				if (battle.phases.isEmpty()) {
+					// battle is over, still need to do post-battle
+					if (!battle.complete) {
+						
+						battle.battleHealth = BattleUtils.handleBattleDamage(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+						battle.originalHealth = new float[] { battle.attackingRegion.unit.health, battle.defendingRegion.unit.health };
+						
+						battle.phases.add(Battle.Phase.UPDATE_HEALTH);
+						
+						// attacker takeover
+						if (battle.battleHealth[1] < 0 && battle.type == Battle.Type.DIRECT) {
+							battle.phases.add(Battle.Phase.TAKEOVER);
+						}
+						
+						// mark battle as complete
+						battle.complete = true;
+					}
+					// post-battle is over
+					else {
+						Region region = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
+						battle.reset();
+						fireEvent(new Event(Event.Type.BATTLE_END, region));
+					}
+				}
 			}
 		}
+		
+		
 	}
 
 	@Override
@@ -112,5 +146,15 @@ public class BattleController extends Controller {
 		// ignore
 		return false;
 	}
-
+	
+	@Override
+	public void handleEvent(Event event) {
+		switch (event.type) {
+		case BATTLE_BEGIN:
+			battle.init(event.region1, event.region2);
+			break;
+		case BATTLE_END:
+			break;
+		}
+	}
 }

@@ -1,17 +1,25 @@
 package com.slauson.tactics.controller;
 
+import com.slauson.tactics.TacticsGame;
+import com.slauson.tactics.event.Event;
+import com.slauson.tactics.event.EventHandler;
+
 /**
  * Base controller.
  * @author josh
  *
  */
-public abstract class Controller {
+public abstract class Controller implements EventHandler {
 
 	protected static final float MAX_DELTA = 0.1f;
 	
 	protected boolean paused;
 	
-	public Controller() {
+	private TacticsGame game;
+	
+	public Controller(TacticsGame game) {
+		this.game = game;
+		game.registerEventHandler(this);
 		paused = false;
 	}
 	
@@ -41,5 +49,9 @@ public abstract class Controller {
 			break;
 		}
 		return false;
+	}
+	
+	public void fireEvent(Event event) {
+		game.fireEvent(event);
 	}
 }

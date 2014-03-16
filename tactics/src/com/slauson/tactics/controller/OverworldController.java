@@ -1,6 +1,8 @@
 package com.slauson.tactics.controller;
 
+import com.slauson.tactics.TacticsGame;
 import com.slauson.tactics.ai.Move;
+import com.slauson.tactics.event.Event;
 import com.slauson.tactics.model.Battle;
 import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
@@ -23,7 +25,6 @@ public class OverworldController extends Controller {
 	private static float TIME_PER_MOVE = 1;
 	
 	private Overworld overworld;
-	private Battle battle;
 	private Region selectedRegion;
 	
 	private Move previousMove;
@@ -31,10 +32,9 @@ public class OverworldController extends Controller {
 	private float currentMoveTime;
 	private boolean paused;
 	
-	public OverworldController(Overworld overworld, Battle battle) {
-		super();
+	public OverworldController(TacticsGame game, Overworld overworld, Battle battle) {
+		super(game);
 		this.overworld = overworld;
-		this.battle = battle;
 		
 		selectedRegion = null;
 		previousMove = null;
@@ -52,58 +52,6 @@ public class OverworldController extends Controller {
 			
 			if (overworld.activePlayer().type != Player.Type.PLAYER) {
 				handleMove(delta);
-			}
-			
-			if (battle.active() && !battle.active()) {
-				
-				// battle is over
-				if (!battle.complete) {
-					
-					battle.battleHealth = BattleUtils.handleBattleDamage(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
-					battle.originalHealth = new float[] { battle.attackingRegion.unit.health, battle.defendingRegion.unit.health };
-					
-					battle.phases.add(Battle.Phase.UPDATE_HEALTH);
-					
-					// attacker takeover
-					if (battle.battleHealth[1] < 0 && battle.type == Battle.Type.DIRECT) {
-						battle.phases.add(Battle.Phase.TAKEOVER);
-					}
-					
-					// mark battle as complete
-					battle.complete = true;
-				}
-				// post-battle is over
-				else {
-					
-					selectedRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
-					
-					// keep updated attacking region selected if it can move
-					if (selectedRegion != null && selectedRegion.unit != null && selectedRegion.unit.hasMove) {
-						selectedRegion.selected = true;
-						RegionUtils.markRegionNeighbors(selectedRegion);
-					}
-					
-					// reset state
-					battle.reset();
-					overworld.phase = Overworld.Phase.ATTACK;
-
-				}
-//				// handle battle
-//				Region updatedAttackingRegion = BattleUtils.handleBattle(battle.attackingRegion, battle.defendingRegion, battle.battleDamage);
-//				
-//				// keep region selected if attacker won battle and can still move
-//				if (updatedAttackingRegion != null && updatedAttackingRegion.unit.hasMove) {
-//					selectedRegion = updatedAttackingRegion;
-//					selectedRegion.selected = true;
-//					
-//					RegionUtils.markRegionNeighbors(selectedRegion);
-//				} else {
-//					selectedRegion = null;
-//				}
-//				
-//				// reset state
-//				battle.reset();
-//				overworld.phase = Overworld.Phase.ATTACK;
 			}
 		}
 	}
@@ -148,7 +96,7 @@ public class OverworldController extends Controller {
 						if (selectedRegion.unit.hasAttack && !selectedRegion.player.equals(region.player) && region.unit != null &&
 								((selectedRegion.unit.type.isRanged() && neighborType.isRanged()) || (!selectedRegion.unit.type.isRanged() && !neighborType.isRanged())))
 						{
-							battle.init(selectedRegion, region);
+							fireEvent(new Event(Event.Type.BATTLE_BEGIN, selectedRegion, region));
 							overworld.phase = Overworld.Phase.BATTLE;
 							return true;
 						}
@@ -241,6 +189,23 @@ public class OverworldController extends Controller {
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public void handleEvent(Event event) {
+		switch (event.type) {
+		case BATTLE_BEGIN:
+			break;
+		case BATTLE_END:
+			// keep updated attacking region selected if it can move
+			if (event.region1 != null && event.region1.unit != null && event.region1.unit.hasMove) {
+				selectedRegion = event.region1;
+				selectedRegion.selected = true;
+				RegionUtils.markRegionNeighbors(selectedRegion);
+			}
+			overworld.phase = Phase.ATTACK;
+			break;
+		}
 	}
 	
 	/**
