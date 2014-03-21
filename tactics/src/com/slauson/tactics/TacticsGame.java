@@ -13,7 +13,7 @@ import com.slauson.tactics.screen.OverworldScreen;
  * @author josh
  *
  */
-public class TacticsGame extends Game {
+public class TacticsGame extends Game implements EventHandler{
 	
 	private OverworldScreen overworldScreen;
 	private List<EventHandler> eventHandlers;
@@ -22,6 +22,7 @@ public class TacticsGame extends Game {
 	public void create() {
 		overworldScreen = new OverworldScreen(this);
 		eventHandlers = new ArrayList<EventHandler>();
+		eventHandlers.add(this);
 		showOverworld();
 	}
 	
@@ -43,6 +44,15 @@ public class TacticsGame extends Game {
 	public void fireEvent(Event event) {
 		for (EventHandler eventHandler : eventHandlers) {
 			eventHandler.handleEvent(event);
+		}
+	}
+
+	@Override
+	public void handleEvent(Event event) {
+		switch (event.type) {
+		default:
+			// ignore
+			break;
 		}
 	}
 	

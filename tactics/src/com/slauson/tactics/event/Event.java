@@ -6,7 +6,8 @@ public class Event {
 	
 	public enum Type {
 		BATTLE_BEGIN,
-		BATTLE_END;
+		BATTLE_END,
+		GAME_END;
 	}
 	
 	public Type type;

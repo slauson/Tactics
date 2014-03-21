@@ -153,7 +153,8 @@ public class BattleController extends Controller {
 		case BATTLE_BEGIN:
 			battle.init(event.region1, event.region2);
 			break;
-		case BATTLE_END:
+		default:
+			// ignore
 			break;
 		}
 	}

@@ -20,4 +20,10 @@ public class Island {
 	public String toString() {
 		return String.format("%dx%d", width, height);
 	}
+	
+	public void reset() {
+		for (Region region : regions) {
+			region.reset();
+		}
+	}
 }

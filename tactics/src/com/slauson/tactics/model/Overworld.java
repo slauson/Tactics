@@ -111,6 +111,13 @@ public class Overworld {
 
 		return null;
 	}
+	
+	public void reset() {
+		for (Island island : islands) {
+			island.reset();
+		}
+		assignRegionPlayers();
+	}
 
 	private void testOverworld() {
 

@@ -7,6 +7,7 @@ import com.slauson.tactics.model.Battle;
 import com.slauson.tactics.model.Neighbor;
 import com.slauson.tactics.model.Overworld;
 import com.slauson.tactics.model.Overworld.Phase;
+import com.slauson.tactics.model.builder.OverworldBuilder;
 import com.slauson.tactics.model.Player;
 import com.slauson.tactics.model.Region;
 import com.slauson.tactics.model.Unit;
@@ -194,8 +195,6 @@ public class OverworldController extends Controller {
 	@Override
 	public void handleEvent(Event event) {
 		switch (event.type) {
-		case BATTLE_BEGIN:
-			break;
 		case BATTLE_END:
 			// keep updated attacking region selected if it can move
 			selectedRegion = event.region1;
@@ -204,6 +203,17 @@ public class OverworldController extends Controller {
 				RegionUtils.markRegionNeighbors(selectedRegion);
 			}
 			overworld.phase = Phase.ATTACK;
+			
+			// check end game condition
+			if (PlayerUtils.getNumActivePlayers(overworld) == 1) {
+				fireEvent(new Event(Event.Type.GAME_END));
+			}
+			break;
+		case GAME_END:
+			overworld.reset();
+			break;
+		default:
+			// ignore
 			break;
 		}
 	}

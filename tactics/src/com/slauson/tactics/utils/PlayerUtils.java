@@ -80,4 +80,21 @@ public class PlayerUtils {
 		
 		return result;
 	}
+	
+	/**
+	 * Returns number of active players.
+	 * @param overworld
+	 * @return
+	 */
+	public static int getNumActivePlayers(Overworld overworld) {
+		int result = 0;
+		
+		for (Player player : overworld.players) {
+			if (player.units > 0) {
+				result++;
+			}
+		}
+		
+		return result;
+	}
 }

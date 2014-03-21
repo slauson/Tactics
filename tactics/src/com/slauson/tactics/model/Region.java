@@ -41,7 +41,7 @@ public class Region {
 		
 		neighbors = new Neighbors();
 		
-		testRegion();
+		reset();
 	}
 	
 	public float simpleDistanceTo(Region other) {
@@ -53,7 +53,7 @@ public class Region {
 		return position.x + ", " + position.y + ": " + player + " - " + unit;
 	}
 	
-	private void testRegion() {
+	public void reset() {
 		int typeIndex = Utils.random().nextInt(Unit.Type.values().length);
 		unit = new Unit(Unit.Type.values()[typeIndex], Utils.random().nextInt((int)Unit.MAX_HEALTH));
 	}
