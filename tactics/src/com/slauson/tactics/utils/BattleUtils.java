@@ -163,6 +163,14 @@ public class BattleUtils {
 			}
 		}
 		
+		// health can't be below 0
+		if (battleHealth[0] < 0) {
+			battleHealth[0] = 0;
+		}
+		if (battleHealth[1] < 0) {
+			battleHealth[1] = 0;
+		}
+		
 		return battleHealth;
 	}
 	

@@ -198,8 +198,8 @@ public class OverworldController extends Controller {
 			break;
 		case BATTLE_END:
 			// keep updated attacking region selected if it can move
-			if (event.region1 != null && event.region1.unit != null && event.region1.unit.hasMove) {
-				selectedRegion = event.region1;
+			selectedRegion = event.region1;
+			if (selectedRegion != null && selectedRegion.unit != null && selectedRegion.unit.hasMove) {
 				selectedRegion.selected = true;
 				RegionUtils.markRegionNeighbors(selectedRegion);
 			}
