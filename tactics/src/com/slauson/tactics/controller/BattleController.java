@@ -121,7 +121,7 @@ public class BattleController extends Controller {
 						battle.phases.add(Battle.Phase.UPDATE_HEALTH);
 						
 						// attacker takeover
-						if (battle.battleHealth[1] < 0 && battle.type == Battle.Type.DIRECT) {
+						if (battle.battleHealth[1] <= 0 && battle.type == Battle.Type.DIRECT) {
 							battle.phases.add(Battle.Phase.TAKEOVER);
 						}
 						
