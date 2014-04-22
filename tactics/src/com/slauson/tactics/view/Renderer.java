@@ -68,7 +68,7 @@ public abstract class Renderer {
 	public void drawUnit(ShapeRenderer renderer, Region region) {
 		
 		// size of unit is based on health
-		float sizeFactor = 0.25f + (region.unit.health / Unit.MAX_HEALTH * 3 / 4);
+		float sizeFactor = 0.5f + (region.unit.health / Unit.MAX_HEALTH * 0.5f);
 		
 		switch(region.unit.type) {
 		case CIRCLE:
@@ -101,12 +101,15 @@ public abstract class Renderer {
 			if (region.unit.offset.len() != 0) {
 				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
 			}
-			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
-					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
-					region.position.x + region.bounds.width/2 + 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
+//			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
+//					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
+//					region.position.x + region.bounds.width/2 + 3*region.bounds.width/8*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
 //			renderer.filledTriangle(region.position.x + region.bounds.width/8, region.position.y + region.bounds.height/8,
 //					region.position.x + region.bounds.width/2, region.position.y + 7*region.bounds.height/8,
 //					region.position.x + 7*region.bounds.width/8, region.position.y + region.bounds.height/8);
+			renderer.filledTriangle(region.position.x + region.bounds.width/2 - region.bounds.width/4*sizeFactor, region.position.y + region.bounds.height/2 - region.bounds.height/4*sizeFactor,
+					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + region.bounds.height/4*sizeFactor,
+					region.position.x + region.bounds.width/2 + region.bounds.width/4*sizeFactor, region.position.y + region.bounds.width/2 - region.bounds.height/4*sizeFactor);
 			renderer.end();
 			break;
 		case RANGED_CIRCLE:
@@ -142,15 +145,21 @@ public abstract class Renderer {
 			if (region.unit.offset.len() != 0) {
 				renderer.translate(region.unit.offset.x, region.unit.offset.y, 0);
 			}
-			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
-					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
-					region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
+//			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
+//					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
+//					region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
 //			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2 - 3*region.bounds.height/8*sizeFactor,
 //					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2,
 //					region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2 - 3*region.bounds.height/8*sizeFactor);
 //			renderer.filledTriangle(region.position.x + region.bounds.width/2 - 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.height/2,
 //					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + 3*region.bounds.height/8*sizeFactor,
 //					region.position.x + region.bounds.width/2 + 3*region.bounds.width/16*sizeFactor, region.position.y + region.bounds.width/2);
+			renderer.filledTriangle(region.position.x + region.bounds.width/2 - region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2,
+					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2 + region.bounds.height/4*sizeFactor,
+					region.position.x + region.bounds.width/2 + region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2);
+			renderer.filledTriangle(region.position.x + region.bounds.width/2 - region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - region.bounds.height/4*sizeFactor,
+					region.position.x + region.bounds.width/2, region.position.y + region.bounds.height/2,
+					region.position.x + region.bounds.width/2 + region.bounds.width/8*sizeFactor, region.position.y + region.bounds.height/2 - region.bounds.height/4*sizeFactor);
 			renderer.end();
 			break;
 		}
